@@ -2,48 +2,58 @@ import pygame
 import configs
 import random
 from objects.slider import Slider
-import math
 
 
 class Ball:
     def __init__(self):
+        # Basic properties
         self.radius = 10
         self.x = configs.WIDTH // 2
         self.y = configs.HEIGHT // 2
-        # Componenti del vettore direzione per le 5 sezioni dì collisione dello slider
-        self.bouncing_comps = [(-0.7, 0.7), (-0.2, 0.9), (0, 1), (0.2, 0.9), (0.7, 0.7)]
         self.velocity = 8
+        self.color = configs.RED
+
+        # The ball can hit the slider in 5 different sections that determine the ball bouncing angle
+        self.bouncing_comps = [(-0.7, 0.7), (-0.2, 0.9), (0, 1), (0.2, 0.9), (0.7, 0.7)]
         velocity_vector = random.choice(self.bouncing_comps)
         self.dx = self.velocity * velocity_vector[0]
         self.dy = -self.velocity * velocity_vector[1]
-        self.color = configs.RED
-        self.SAMPLING_RATE = 10
+
+        # Reference to the slider (singleton)
         self.slider_ref = Slider()
 
-    # Ritorna True se tocca il soffitto, False se cade e None per ogni altro evento
-    def move(self) -> bool | None:
+    '''
+    Manages the ball movement and bouncing. It is to be called every frame
+    :return False if the ball falls out of the screen, True otherwise
+    '''
+    def move(self) -> bool:
         self.x += self.dx
         self.y += self.dy
 
-        # Collisione con i bordi
+        # Walls collision
         if self.x - self.radius <= 0 or self.x + self.radius >= configs.WIDTH:
             self.dx = -self.dx
-        elif self.y - self.radius <= 0:  # Punto guadagnato
+        elif self.hits_the_ceiling():
             self.dy = -self.dy
-            return True
-        elif self.y + self.radius >= configs.HEIGHT:  # Palla persa
-            return False  # Segnale per reset
+        elif self.y + self.radius >= configs.HEIGHT:  # Falls off
+            return False  # Signals the reset
         self.__collision_with_slider()
-        return None
+        return True
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+
+    # To make the Q-Learning algorithm work in a contiguous space, coordinates and direction are sampled.
+    # Thus, the Q-table will contain a discrete number of "ranges" of coordinates and 4 possible values for direction
+    # Note: actually neither position nor direction values belong to a contiguous space because floating point
+    #       have a limited precision. This is one of the main limitations of Q-Learning
 
     @property
     def discrete_position(self) -> (int, int):
         dx = self.x // (configs.WIDTH // configs.SAMPLING_RATE)
         dy = self.y // (configs.HEIGHT // configs.SAMPLING_RATE)
-
+        if dx == 30:  # To prevent the ball to escape from the right side
+            dx = 29
         return dx, dy
 
     @property
@@ -53,15 +63,16 @@ class Ball:
 
         return dx, dy
 
+    def hits_the_ceiling(self) -> bool:
+        return self.y - self.radius <= 0
+
     def __collision_with_slider(self):
         if (self.y + self.radius >= self.slider_ref.y) and (
                 self.slider_ref.x <= self.x <= self.slider_ref.x + self.slider_ref.width):
-            # Calcolo della velocità x e y sulla base della zona dello slider colpita
+            # Calculate the bouncing angle based on the colliding area
             normalized_ball_x = self.x - self.slider_ref.x
             collision_section = int(normalized_ball_x // (self.slider_ref.width // 5))
             comps = self.bouncing_comps[collision_section]
             self.dx = self.velocity * comps[0]
             self.dy = self.velocity * comps[1] * -1
-            self.y = self.slider_ref.y - self.radius - 10  # Collision check
-
-            print(f"{collision_section=} {self.dx=} {self.dy=}")
+            self.y = self.slider_ref.y - self.radius - 1  # To prevent object intersection

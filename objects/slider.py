@@ -32,11 +32,6 @@ class Slider(metaclass=SingletonMeta):
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
 
-    def collide(self, ball):
-        # Controlla la collisione con la palla
-        if (ball.y + ball.radius >= self.y) and (self.x <= ball.x <= self.x + self.width):
-            ball.dy = -ball.dy
-
     def reset(self):
         self.x = configs.WIDTH // 2 - self.width // 2
 
