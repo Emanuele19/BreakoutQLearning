@@ -1,7 +1,7 @@
 import pygame
 
 import configs
-from control.controller import Controller
+from control.controller import MainController
 from objects.slider import Slider
 import random
 import pickle
@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 
 def main():
     EPSILON = 0.1
-    LEARNING_RATE = 0.01
-    DISCOUNT_FACTOR = 0.99
+    LEARNING_RATE = 0.001
+    DISCOUNT_FACTOR = 0.999
 
-    controller = Controller()
+    controller = MainController().get_instance(is_human=False)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
     action_space = [action for action in Slider.Action]
     state_space = [(ball_x, ball_y, ball_dir_x, ball_dir_y, slider_x)
@@ -33,8 +33,6 @@ def main():
     for state in state_space:
         Q[state] = {action: 0.0 for action in action_space}
 
-    # TODO: ChatGPT consiglia di mettere un ciclo esterno for e in range(eposides) con dentro il while infinito
-    #       Ogni episodio termina quando la palla cade fuori dallo schermo. Come gestirlo?
     # Esecuzione
     reward_traking_list = []
     epsilon_tracking_list = []
@@ -58,7 +56,7 @@ def main():
 
             # 4. Aggiorna la tabella
             update_table(Q, state, action, reward, new_state, LEARNING_RATE, DISCOUNT_FACTOR)
-            EPSILON = max(0.01, EPSILON * 0.995)
+            EPSILON = max(0.01, EPSILON * 0.99995)
             epsilon_tracking_list.append(EPSILON)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
