@@ -19,15 +19,15 @@ class LearnerController(AbstractController):
         self.slider.move(action)
 
         # Ball movement feedback
-        ball_state = self.ball.move()
-        if self.ball.hits_the_ceiling():
+        in_game, hits_the_slider = self.ball.move()
+        if hits_the_slider:
             self.score += 1
             self.last_reward = 1
-        elif ball_state is False:  # Falls off
+        elif not in_game:  # Falls off
             self.last_reward = -100
             return False
         else:
-            self.last_reward = -0.00001
+            self.last_reward = 0
 
         self.total_reward += self.last_reward
 

@@ -15,7 +15,8 @@ class Ball:
 
         # The ball can hit the slider in 5 different sections that determine the ball bouncing angle
         self.bouncing_comps = [(-0.7, 0.7), (-0.2, 0.9), (0, 1), (0.2, 0.9), (0.7, 0.7)]
-        velocity_vector = random.choice(self.bouncing_comps)
+        self.starting_bouncing_comps = [(-0.7, 0.7), (-0.2, 0.9), (0.2, 0.9), (0.7, 0.7)]
+        velocity_vector = random.choice(self.starting_bouncing_comps)
         self.dx = self.velocity * velocity_vector[0]
         self.dy = -self.velocity * velocity_vector[1]
 
@@ -24,9 +25,9 @@ class Ball:
 
     '''
     Manages the ball movement and bouncing. It is to be called every frame
-    :return False if the ball falls out of the screen, True otherwise
+    :return False if the ball falls out of the screen, True otherwise as the first boolean and whether it is hitting the slider in that instant
     '''
-    def move(self) -> bool:
+    def move(self) -> (bool, bool):
         self.x += self.dx
         self.y += self.dy
 
@@ -36,9 +37,9 @@ class Ball:
         elif self.hits_the_ceiling():
             self.dy = -self.dy
         elif self.y + self.radius >= configs.HEIGHT:  # Falls off
-            return False  # Signals the reset
-        self.__collision_with_slider()
-        return True
+            return False, False  # Signals the reset
+
+        return True, self.hits_the_slider()
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
@@ -66,7 +67,7 @@ class Ball:
     def hits_the_ceiling(self) -> bool:
         return self.y - self.radius <= 0
 
-    def __collision_with_slider(self):
+    def hits_the_slider(self) -> bool:
         if (self.y + self.radius >= self.slider_ref.y) and (
                 self.slider_ref.x <= self.x <= self.slider_ref.x + self.slider_ref.width):
             # Calculate the bouncing angle based on the colliding area
@@ -76,3 +77,5 @@ class Ball:
             self.dx = self.velocity * comps[0]
             self.dy = self.velocity * comps[1] * -1
             self.y = self.slider_ref.y - self.radius - 1  # To prevent object intersection
+            return True
+        return False
