@@ -40,8 +40,8 @@ def main():
     # Esecuzione
     reward_traking_list = []
     epsilon_tracking_list = []
-    episodes = 5000
-    for episode in range(episodes):
+
+    for episode in range(configs.EPISODES):
         running = True
         print(f"Running episode: {episode}")
         controller.reset()
@@ -66,7 +66,7 @@ def main():
                     serialize_table(Q)
                     os._exit(1)
 
-        epsilon = max(configs.MIN_EPSILON, epsilon * 0.995)
+        epsilon = epsilon_decay(episode)
         epsilon_tracking_list.append(epsilon)
         reward_traking_list.append(controller.get_total_reward())
 
@@ -90,6 +90,9 @@ def choose_action(q_table, current_state, action_space, p):
 def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor):
     max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
+
+def epsilon_decay(current_episode: int) -> float:
+    return max(configs.MIN_EPSILON, configs.EPSILON - current_episode * (configs.EPSILON - configs.MIN_EPSILON) / configs.EPISODES)
 
 def serialize_table(q):
     with open('Q_table.pkl', 'wb') as f:
