@@ -13,10 +13,14 @@ import matplotlib.pyplot as plt
 # I parametri da distretizzare sono la posizione della palla (x, y), la direzione (su/giù, sinistra/destra)
 #   e la posizione dello slider (sinistra/destra)
 
+# TODO 1: il LEARNING_RATE deve decadere (vedi funzione Mathf.lerp di unity)
+# TODO 3: rivedi l'exploration rate e la funzione di decadimento
+# TODO 5: "score" deve essere comunque il rimbalzo sul soffitto
+
+# PROBLEMA: togliendo il rimbalzo verticale dalla scelta dei rimbalzi possibili all'inizio dell'episodio le prestazioni calano in maniera critica
+
 def main():
-    EPSILON = 0.1
-    LEARNING_RATE = 0.001
-    DISCOUNT_FACTOR = 0.999
+    epsilon = configs.EPSILON
 
     controller = MainController().get_instance(is_human=False)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
@@ -46,7 +50,7 @@ def main():
             state = controller.get_game_state()
 
             # 2. Scegli un'azione
-            action = choose_action(Q, state, action_space, EPSILON)
+            action = choose_action(Q, state, action_space, epsilon)
 
             # 3. Esegui l'azione
             running = controller.run_game(action)
@@ -55,20 +59,20 @@ def main():
             reward = controller.get_reward()
 
             # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, LEARNING_RATE, DISCOUNT_FACTOR)
-            EPSILON = max(0.01, EPSILON * 0.99995)
-            epsilon_tracking_list.append(EPSILON)
+            update_table(Q, state, action, reward, new_state, configs.LEARNING_RATE, configs.DISCOUNT_FACTOR)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
                     serialize_table(Q)
                     os._exit(1)
 
+        epsilon = max(configs.MIN_EPSILON, epsilon * 0.995)
+        epsilon_tracking_list.append(epsilon)
         reward_traking_list.append(controller.get_total_reward())
 
         if episode % 100 == 0 and episode != 0:
-            report(reward_traking_list, "rewards.png", "rewards", episode)
-            report(epsilon_tracking_list, "discount_factor.png", "epsilon", episode)
+            report(reward_traking_list, "obtained_rewards.png", "rewards", episode)
+            report(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
     pygame.quit()
 
     serialize_table(Q)
