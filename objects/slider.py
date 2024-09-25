@@ -3,8 +3,7 @@ import configs
 from enum import Enum
 from utils.singletonMeta import SingletonMeta
 
-VELOCITY = 8
-
+VELOCITY = 16
 
 class Slider(metaclass=SingletonMeta):
     def __init__(self):

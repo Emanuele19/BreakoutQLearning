@@ -15,7 +15,7 @@ import os
 # PROBLEMA: togliendo il rimbalzo verticale dalla scelta dei rimbalzi possibili all'inizio dell'episodio le prestazioni calano in maniera critica
 
 def main():
-    epsilon = configs.EPSILON
+    exploration_rate = configs.EPSILON
 
     controller = ControllerFactory.get_instance(is_human=False)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
@@ -45,7 +45,7 @@ def main():
             state = controller.get_game_state()
 
             # 2. Scegli un'azione
-            action = choose_action(Q, state, action_space, epsilon)
+            action = choose_action(Q, state, action_space, exploration_rate)
 
             # 3. Esegui l'azione
             running = controller.run_game(action)
@@ -61,8 +61,8 @@ def main():
                     serialize_table(Q)
                     os._exit(1)
 
-        epsilon = epsilon_decay(episode)
-        epsilon_tracking_list.append(epsilon)
+        exploration_rate = epsilon_decay(episode)
+        epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
 
         if episode % 100 == 0 and episode != 0:
