@@ -58,8 +58,14 @@ class Ball:
         if dx >= 30:
             dx = 29
 
+        if dy >= 30:
+            dy = 29
+
         if dy < 0:
-            dy = 0
+            dy = 1
+
+        if dx < 0:
+            dx = 0
 
         return dx, dy
 
@@ -71,7 +77,7 @@ class Ball:
         return dx, dy
 
     def hits_the_ceiling(self) -> bool:
-        return self.y - self.radius <= 0
+        return self.y - self.radius <= 1
 
     def hits_the_slider(self) -> bool:
         if (self.y + self.radius >= self.slider_ref.y) and (

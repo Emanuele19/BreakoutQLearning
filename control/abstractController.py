@@ -40,7 +40,7 @@ class AbstractController(ABC):
 
     def get_game_state(self) -> (int, int, int, int, int):
         return (self.ball.discrete_position[0], self.ball.discrete_position[1],
-                self.ball.discrete_direction[1], self.ball.discrete_direction[1],
+                self.ball.discrete_direction[0], self.ball.discrete_direction[1],
                 self.slider.discrete_position)
 
     def get_reward(self) -> float:

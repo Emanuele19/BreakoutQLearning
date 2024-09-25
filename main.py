@@ -1,5 +1,4 @@
 import pygame
-
 import configs
 from control.controller import ControllerFactory
 from objects.slider import Slider
@@ -7,12 +6,9 @@ import random
 import pickle
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 
-# TODO 1: il LEARNING_RATE deve decadere (vedi funzione Mathf.lerp di unity)
-# TODO 3: rivedi l'exploration rate e la funzione di decadimento
-# TODO 5: "score" deve essere comunque il rimbalzo sul soffitto
-
-# PROBLEMA: togliendo il rimbalzo verticale dalla scelta dei rimbalzi possibili all'inizio dell'episodio le prestazioni calano in maniera critica
+# TODO: test su 10000 episodi con max 20 palleggi. Serializza i punteggi
 
 def main():
     exploration_rate = configs.EPSILON
@@ -53,23 +49,28 @@ def main():
             new_state = controller.get_game_state()
             reward = controller.get_reward()
 
+            if controller.get_total_reward() >= 20: # Goal reached
+                running = False
+
             # 4. Aggiorna la tabella
             update_table(Q, state, action, reward, new_state, configs.LEARNING_RATE, configs.DISCOUNT_FACTOR)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
                     serialize_table(Q)
+                    report(reward_traking_list)
                     os._exit(1)
 
         exploration_rate = epsilon_decay(episode)
         epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
 
-        if episode % 100 == 0 and episode != 0:
-            report(reward_traking_list, "obtained_rewards.png", "rewards", episode)
-            report(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
+        if (episode + 1) % 100 == 0 and episode != 0:
+            plot_performance(reward_traking_list, "obtained_rewards.png", "rewards", episode)
+            plot_performance(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
     pygame.quit()
 
+    report(reward_traking_list)
     serialize_table(Q)
 
 
@@ -97,13 +98,24 @@ def load_table():
     with open('Q_table.pkl', 'rb') as f:
         return pickle.load(f)
 
-def report(parameter_list: list, filename: str, parameter_name: str, episodes: int):
+def plot_performance(parameter_list: list, filename: str, parameter_name: str, episodes: int):
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
     plt.figure()
-    plt.plot(parameter_list, marker='.')
-    plt.title(f"{parameter_name} ({episodes}) episodes")
+    plt.title(f"{parameter_name} ({episodes+1}) episodes")
     plt.ylabel(parameter_name)
+    means_list = [np.mean(c) for c in chunks(parameter_list, 50)]
+    x_means = np.arange(25, len(parameter_list), 50)
+    plt.plot(parameter_list, marker='.')
+    plt.plot(x_means, means_list, marker='x')
     plt.savefig(filename)
     plt.close()
+
+"""Serializes a list containing the total rewards obtained per episode"""
+def report(parameter_list: list):
+    with open("rewards_per_episode.pkl", "wb") as f:
+        pickle.dump(parameter_list, f)
 
 if __name__ == "__main__":
     main()
