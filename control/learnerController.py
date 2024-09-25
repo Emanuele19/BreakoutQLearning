@@ -3,11 +3,14 @@ from objects.slider import Slider
 import configs
 
 
+MIN_PENALTY = -10
+MAX_PENALTY = -100
+
 class LearnerController(AbstractController):
     def __init__(self):
         super().__init__()
 
-    def run_game(self, action: Slider.Action = None):
+    def run_game(self, action: Slider.Action = None) -> bool:
         ret = self.__train(action=action)
         self.refresh()
         return ret
@@ -24,7 +27,8 @@ class LearnerController(AbstractController):
             self.score += 1
             self.last_reward = 1
         elif not in_game:  # Falls off
-            self.last_reward = -100
+            distance = self.slider.x - self.ball.x if self.ball.x < self.slider.x else self.ball.x - self.slider.x + self.slider.width
+            self.last_reward = max(MIN_PENALTY, MAX_PENALTY * (float(distance) / configs.WIDTH)) # Penalty proportional to distance
             return False
         else:
             self.last_reward = 0
