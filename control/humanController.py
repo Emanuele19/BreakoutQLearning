@@ -10,17 +10,8 @@ class HumanController(AbstractController):
 
     def run_game(self, action: Slider.Action = None) -> bool:
         result = self.__play()
-
-        self.slider.draw(self.screen)
-        self.ball.draw(self.screen)
-
-        score_text = self.font.render(f"Score: {self.score}\nRews: {self.total_reward:.5f}", True, configs.WHITE)
-        self.screen.blit(score_text, (configs.WIDTH - score_text.get_width() - 10, 10))
-
-        pygame.display.flip()
-
+        self.refresh()
         return result
-
 
     def __play(self):
         self.clock.tick(configs.PLAY_FPS)

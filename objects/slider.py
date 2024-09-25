@@ -23,7 +23,7 @@ class Slider(metaclass=SingletonMeta):
     def move(self, direction: Action):
         self.x += direction.value
 
-        # Limiti dello schermo
+        # Screen boundaries
         if self.x < 0:
             self.x = 0
         elif self.x + self.width > configs.WIDTH:

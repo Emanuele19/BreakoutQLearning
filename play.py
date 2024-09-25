@@ -1,10 +1,10 @@
-from control.controller import MainController
+from control.controller import ControllerFactory
 import pygame
 import sys
 
 
 def main():
-    game = MainController().getInstance(is_human=True, is_training=False)
+    game = ControllerFactory.get_instance(is_human=True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

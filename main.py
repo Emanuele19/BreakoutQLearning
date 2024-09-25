@@ -1,17 +1,12 @@
 import pygame
 
 import configs
-from control.controller import MainController
+from control.controller import ControllerFactory
 from objects.slider import Slider
 import random
 import pickle
 import matplotlib.pyplot as plt
-
-
-# Appunti:
-# Per far funzionare il Q-Learning con parametri continui (posizione per es.) devo prima discretizzarli
-# I parametri da distretizzare sono la posizione della palla (x, y), la direzione (su/giù, sinistra/destra)
-#   e la posizione dello slider (sinistra/destra)
+import os
 
 # TODO 1: il LEARNING_RATE deve decadere (vedi funzione Mathf.lerp di unity)
 # TODO 3: rivedi l'exploration rate e la funzione di decadimento
@@ -22,7 +17,7 @@ import matplotlib.pyplot as plt
 def main():
     epsilon = configs.EPSILON
 
-    controller = MainController().get_instance(is_human=False)
+    controller = ControllerFactory.get_instance(is_human=False)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
     action_space = [action for action in Slider.Action]
     state_space = [(ball_x, ball_y, ball_dir_x, ball_dir_y, slider_x)

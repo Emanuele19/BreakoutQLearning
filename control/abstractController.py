@@ -27,7 +27,7 @@ class AbstractController(ABC):
         self.slider.draw(self.screen)
         self.ball.draw(self.screen)
 
-        score_text = self.font.render(f"Score: {self.score}\nRews: {self.total_reward:.5f}", True, configs.WHITE)
+        score_text = self.font.render(f"Rewards: {self.total_reward}", True, configs.WHITE)
         self.screen.blit(score_text, (configs.WIDTH - score_text.get_width() - 10, 10))
 
         pygame.display.flip()
