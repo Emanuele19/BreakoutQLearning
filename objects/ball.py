@@ -53,8 +53,14 @@ class Ball:
     def discrete_position(self) -> (int, int):
         dx = self.x // (configs.WIDTH // configs.SAMPLING_RATE)
         dy = self.y // (configs.HEIGHT // configs.SAMPLING_RATE)
-        if dx == 30:  # To prevent the ball to escape from the right side
+
+        # Boundary escape prevention
+        if dx >= 30:
             dx = 29
+
+        if dy < 0:
+            dy = 0
+
         return dx, dy
 
     @property
