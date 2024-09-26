@@ -51,6 +51,11 @@ class Ball:
 
     @property
     def discrete_position(self) -> (int, int):
+        if self.x < 0: self.x = 0
+        if self.y < 0: self.y = 0
+        if self.x > configs.WIDTH: self.x = configs.WIDTH
+        if self.y > configs.HEIGHT: self.y = configs.HEIGHT
+
         dx = self.x // (configs.WIDTH // configs.SAMPLING_RATE)
         dy = self.y // (configs.HEIGHT // configs.SAMPLING_RATE)
 
