@@ -9,6 +9,7 @@ import os
 import numpy as np
 
 # TODO: test su 10000 episodi con max 20 palleggi. Serializza i punteggi
+# TODO: fare uno spreadsheet per confrontare le prestazioni del modello allenato su diversi valori di metaparametri
 
 def main():
     exploration_rate = configs.EPSILON
