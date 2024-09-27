@@ -32,10 +32,15 @@ class Ball:
         self.y += self.dy
 
         # Walls collision
-        if self.x - self.radius <= 0 or self.x + self.radius >= configs.WIDTH:
+        if self.x - self.radius <= 0:
             self.dx = -self.dx
+            self.x = self.radius + 1
+        elif self.x + self.radius >= configs.WIDTH:
+            self.dx = -self.dx
+            self.x = configs.WIDTH - 1 - self.radius
         elif self.hits_the_ceiling():
             self.dy = -self.dy
+            self.y = self.radius + 1
         elif self.y + self.radius >= configs.HEIGHT:  # Falls off
             return False, False  # Signals the reset
 
@@ -82,7 +87,7 @@ class Ball:
         return dx, dy
 
     def hits_the_ceiling(self) -> bool:
-        return self.y - self.radius <= 1
+        return self.y - self.radius <= 0
 
     def hits_the_slider(self) -> bool:
         if (self.y + self.radius >= self.slider_ref.y) and (
