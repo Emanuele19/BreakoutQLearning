@@ -5,7 +5,7 @@ import numpy as np
 import pygame
 from matplotlib import pyplot as plt
 
-from control.controller import ControllerFactory
+from control.controllerFactory import ControllerFactory
 
 def main():
     controller = ControllerFactory.get_instance(is_human=False)

@@ -1,4 +1,4 @@
-from control.controller import ControllerFactory
+from control.controllerFactory import ControllerFactory
 import pygame
 import sys
 

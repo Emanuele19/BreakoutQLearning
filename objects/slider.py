@@ -1,11 +1,12 @@
 import pygame
 import configs
 from enum import Enum
-from utils.singletonMeta import SingletonMeta
+
+from collisions.collidable import Collidable
 
 VELOCITY = 16
 
-class Slider(metaclass=SingletonMeta):
+class Slider(Collidable):
     def __init__(self):
         self.width = 100
         self.height = 10
@@ -33,6 +34,12 @@ class Slider(metaclass=SingletonMeta):
 
     def reset(self):
         self.x = configs.WIDTH // 2 - self.width // 2
+
+    def get_boundaries(self) -> [float, float, float, float]:
+        return [self.x, self.y, self.width, self.height]
+
+    def on_collision(self, other: 'Collidable') -> None:
+        pass
 
     @property
     def discrete_position(self) -> int:

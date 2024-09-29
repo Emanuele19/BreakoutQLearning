@@ -1,5 +1,9 @@
 import pygame
 import configs
+from collisions.collisionHandler import CollisionHandler
+from objects.ceiling import Ceiling
+from objects.floor import Floor
+from objects.sideWall import SideWall
 from objects.slider import Slider
 from objects.ball import Ball
 from abc import ABC, abstractmethod
@@ -14,6 +18,18 @@ class AbstractController(ABC):
         self.clock = pygame.time.Clock()
         self.slider = Slider()
         self.ball = Ball()
+        self.ceiling = Ceiling(configs.WIDTH)
+        self.floor = Floor(configs.HEIGHT, configs.WIDTH)
+        self.leftWall = SideWall(1, configs.HEIGHT)
+        self.rightWall = SideWall(configs.WIDTH - 1, configs.HEIGHT)
+        self.collisionHandler = CollisionHandler([
+            self.ball,
+            self.slider,
+            self.ceiling,
+            self.floor,
+            self.leftWall,
+            self.rightWall
+        ])
         self.score = 0
         self.last_reward = 0
         self.total_reward = 0

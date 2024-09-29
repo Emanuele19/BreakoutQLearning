@@ -1,6 +1,6 @@
 import pygame
 import configs
-from control.controller import ControllerFactory
+from control.controllerFactory import ControllerFactory
 from objects.slider import Slider
 import random
 import pickle
