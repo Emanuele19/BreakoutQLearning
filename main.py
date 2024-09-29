@@ -10,6 +10,10 @@ import numpy as np
 
 # TODO: fare uno spreadsheet per confrontare le prestazioni del modello allenato su diversi valori di metaparametri
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
+# TODO: sistema di reward per la rottura di mattoncini
+# TODO: ricerca incremental learning nel contesto del q learning
+# TODO: implementazione
+
 def main():
     exploration_rate = configs.EPSILON
 
