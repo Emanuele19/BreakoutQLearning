@@ -1,4 +1,5 @@
 from control.abstractController import AbstractController
+from objects.floor import Floor
 from objects.slider import Slider
 import configs
 
@@ -21,20 +22,17 @@ class LearnerController(AbstractController):
 
         self.slider.move(action)
 
-        # Ball movement feedback
-        in_game, hits_the_slider = self.ball.move()
-        if hits_the_slider:
-            self.score += 1
-            self.last_reward = 1
-        elif not in_game:  # Falls off
+        self.ball.move()
+        collider = self.collisionHandler.check_collision(self.ball)
+        if isinstance(collider, Floor):
             distance = self.slider.x - self.ball.x if self.ball.x < self.slider.x else self.ball.x - self.slider.x + self.slider.width
             self.last_reward = max(MIN_PENALTY, MAX_PENALTY * (float(distance) / configs.WIDTH)) # Penalty proportional to distance
             return False
+        elif isinstance(collider, Slider):
+            self.last_reward = 1
         else:
             self.last_reward = 0
-
         self.total_reward += self.last_reward
-
         return True
 
     def __play(self):

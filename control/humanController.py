@@ -1,3 +1,5 @@
+from objects.ceiling import Ceiling
+from objects.floor import Floor
 from objects.slider import Slider
 from control.abstractController import AbstractController
 import configs
@@ -24,10 +26,11 @@ class HumanController(AbstractController):
         if keys[pygame.K_RIGHT]:
             self.slider.move(self.slider.Action.RIGHT)
 
-        ball_state = self.ball.move()
-        if self.ball.hits_the_ceiling():
-            self.score += 1
-        elif ball_state is False:
+        self.ball.move()
+        collider = self.collisionHandler.check_collision(self.ball)
+        if isinstance(collider, Floor):
             return False
+        elif isinstance(collider, Ceiling):
+            self.total_reward += 1
 
         return True
