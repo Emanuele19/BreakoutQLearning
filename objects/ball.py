@@ -3,6 +3,7 @@ import configs
 import random
 
 from collisions.collidable import Collidable
+from objects.brick import Brick
 from objects.ceiling import Ceiling
 from objects.sideWall import SideWall
 from objects.slider import Slider
@@ -35,6 +36,7 @@ class Ball(Collidable):
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+        pygame.draw.rect(screen, self.color, (self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2))
 
     def get_boundaries(self) -> [float, float, float, float]:
         return [self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2]
@@ -61,6 +63,14 @@ class Ball(Collidable):
         elif isinstance(other, Ceiling):
             self.dy = -self.dy
             self.y = self.radius + 1
+        elif isinstance(other, Brick):
+            if not other.is_broken:
+                if other.x <= self.x <= other.x + other.w:
+                    self.dy = -self.dy
+                    self.y += 1
+                else:
+                    self.dx = -self.dx
+                other.brake()
 
     # To make the Q-Learning algorithm work in a contiguous space, coordinates and direction are sampled.
     # Thus, the Q-table will contain a discrete number of "ranges" of coordinates and 4 possible values for direction

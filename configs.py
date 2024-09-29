@@ -8,6 +8,7 @@ SAMPLING_RATE = 30  # to make contiguous values discrete
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)
 
 # model meta-parameters
 EPSILON = 0.9
