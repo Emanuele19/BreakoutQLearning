@@ -48,13 +48,16 @@ class Ball(Collidable):
                 self.dx = -self.dx
                 self.x = configs.WIDTH - 1 - self.radius
         elif isinstance(other, Slider):
-            normalized_ball_x = self.x - other.x
-            collision_section = int(normalized_ball_x // (other.width // 5))
-            if collision_section < 0: collision_section = 0
-            comps = self.bouncing_comps[collision_section]
-            self.dx = self.velocity * comps[0]
-            self.dy = self.velocity * comps[1] * -1
-            self.y = other.y - self.radius - 1
+            if other.x <= self.x <= other.x + other.width:
+                normalized_ball_x = self.x - other.x
+                collision_section = int(normalized_ball_x // (other.width // 5))
+                if collision_section < 0: collision_section = 0
+                comps = self.bouncing_comps[collision_section]
+                self.dx = self.velocity * comps[0]
+                self.dy = self.velocity * comps[1] * -1
+                self.y = other.y - self.radius - 1
+            else:
+                self.dx = -self.dx
         elif isinstance(other, Ceiling):
             self.dy = -self.dy
             self.y = self.radius + 1
