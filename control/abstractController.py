@@ -74,3 +74,6 @@ class AbstractController(ABC):
     # TODO: migliora, è inefficiente
     def is_ended(self):
         return all(brick.is_broken for brick in self.bricks)
+
+    def broken_bricks(self):
+        return len([brick for brick in self.bricks if brick.is_broken])
