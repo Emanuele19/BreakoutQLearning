@@ -36,7 +36,6 @@ class Ball(Collidable):
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
-        pygame.draw.rect(screen, self.color, (self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2))
 
     def get_boundaries(self) -> [float, float, float, float]:
         return [self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2]
