@@ -13,7 +13,7 @@ def main():
     # Inizializzazione della tabella
     Q = load_table()
 
-    reward_traking_list = []
+    broken_bricks_tracking_list = []
 
     episode = 0
     while True:
@@ -29,19 +29,20 @@ def main():
             # 3. Esegui l'azione
             running = controller.run_game(action)
 
-            if controller.get_total_reward() >= 20:
+            if controller.is_ended():
                 running = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
-                    report(reward_traking_list, "performances.png", "rewards", episode)
+                    report(broken_bricks_tracking_list, "performances.png", "rewards", episode)
                     os._exit(1)
 
-        reward_traking_list.append(controller.get_total_reward())
+        broken_bricks_tracking_list.append(controller.broken_bricks())
 
         if (episode + 1) % 100 == 0 and episode != 0:
-            report(reward_traking_list, "performances.png", "rewards", episode)
+            report(broken_bricks_tracking_list, "performances.png", "rewards", episode)
+            return
 
         episode += 1
 

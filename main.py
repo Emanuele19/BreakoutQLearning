@@ -35,11 +35,12 @@ def main():
     # Esecuzione
     reward_traking_list = []
     epsilon_tracking_list = []
+    broken_bricks_list = []
 
+    controller.reset()
     for episode in range(configs.EPISODES):
         running = True
         print(f"Running episode: {episode}")
-        controller.reset()
         while running:
             # 1. Osserva lo stato corrente
             state = controller.get_game_state()
@@ -53,7 +54,8 @@ def main():
             new_state = controller.get_game_state()
             reward = controller.get_reward()
 
-            if controller.get_total_reward() >= 20: # Goal reached
+            if controller.is_ended():
+                reward = 1000  # Win reward
                 running = False
 
             # 4. Aggiorna la tabella
@@ -65,13 +67,18 @@ def main():
                     report(reward_traking_list)
                     os._exit(1)
 
+
         exploration_rate = epsilon_decay(episode)
         epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
+        broken_bricks_list.append(controller.broken_bricks())
 
         if (episode + 1) % 100 == 0 and episode != 0:
             plot_performance(reward_traking_list, "obtained_rewards.png", "rewards", episode)
             plot_performance(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
+            plot_performance(broken_bricks_list, "broken_bricks.png", "broken bricks", episode)
+
+        controller.reset()
     pygame.quit()
 
     report(reward_traking_list)
