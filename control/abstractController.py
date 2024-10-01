@@ -44,9 +44,10 @@ class AbstractController(ABC):
     def refresh(self) -> None:
         self.slider.draw(self.screen)
         self.ball.draw(self.screen)
-        for brick in self.bricks: brick.draw(self.screen)
+        for brick in self.bricks:
+            brick.draw(self.screen)
 
-        score_text = self.font.render(f"Rewards: {self.total_reward}", True, configs.WHITE)
+        score_text = self.font.render(f"Rewards: {self.total_reward:.4f}", True, configs.WHITE)
         self.screen.blit(score_text, (configs.WIDTH - score_text.get_width() - 10, 10))
 
         pygame.display.flip()
@@ -61,7 +62,7 @@ class AbstractController(ABC):
 
     def get_game_state(self) -> (int, int, int, int, int):
         return (self.ball.discrete_position[0], self.ball.discrete_position[1],
-                self.ball.discrete_direction[1], self.ball.discrete_direction[1],
+                self.ball.discrete_direction[0], self.ball.discrete_direction[1],
                 self.slider.discrete_position)
 
     def get_reward(self) -> float:
@@ -69,3 +70,7 @@ class AbstractController(ABC):
 
     def get_total_reward(self) -> float:
         return self.total_reward
+
+    # TODO: migliora, è inefficiente
+    def is_ended(self):
+        return all(brick.is_broken for brick in self.bricks)
