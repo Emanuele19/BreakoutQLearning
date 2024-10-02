@@ -9,7 +9,7 @@ MIN_PENALTY = -10
 MAX_PENALTY = -100
 TICK_PENALTY = 0.0001
 BOUNCE_REWARD = 1
-BRICK_REWARD = 10
+BRICK_REWARD = 0.5
 
 # TODO: ogni test va fatto su più iterazioni, prova 30000
 

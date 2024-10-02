@@ -73,7 +73,7 @@ def main():
         reward_traking_list.append(controller.get_total_reward())
         broken_bricks_list.append(controller.broken_bricks())
 
-        if (episode + 1) % 100 == 0 and episode != 0:
+        if (episode + 1) % 500 == 0 and episode != 0:
             plot_performance(reward_traking_list, "obtained_rewards.png", "rewards", episode)
             plot_performance(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
             plot_performance(broken_bricks_list, "broken_bricks.png", "broken bricks", episode)
@@ -116,8 +116,8 @@ def plot_performance(parameter_list: list, filename: str, parameter_name: str, e
     plt.figure()
     plt.title(f"{parameter_name} ({episodes+1}) episodes")
     plt.ylabel(parameter_name)
-    means_list = [np.mean(c) for c in chunks(parameter_list, 50)]
-    x_means = np.arange(25, len(parameter_list), 50)
+    means_list = [np.mean(c) for c in chunks(parameter_list, 500)]
+    x_means = np.arange(250, len(parameter_list), 500)
     plt.plot(parameter_list, marker='.')
     plt.plot(x_means, means_list, marker='x')
     plt.savefig(filename)
