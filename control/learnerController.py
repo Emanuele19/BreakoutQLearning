@@ -26,7 +26,7 @@ BRICK_REWARD = 0.5
 # Motivo: l'agente deve imparare soprattutto ad intercettare la palla per avere più possibilità di mandare avanti il gioco
 
 # Test 3, 4
-# Come 1 e 2 ma la palla comincia con direzione verso il basso (evita il primo colpo ai mattoni
+# Come 1 e 2 ma la palla comincia con direzione verso il basso (evita il primo colpo ai mattoni)
 
 
 class LearnerController(AbstractController):
