@@ -11,12 +11,13 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q = load_table()
+    Q = load_table('tests/test1/Q_table.pkl')
 
     broken_bricks_tracking_list = []
 
-    episode = 0
-    while True:
+    episodes = 100
+    for episode in range(episodes):
+        print(f"Running episode {episode + 1}")
         running = True
         controller.reset()
         while running:
@@ -32,23 +33,13 @@ def main():
             if controller.is_ended():
                 running = False
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    print("pygame.QUIT")
-                    report(broken_bricks_tracking_list, "performances.png", "rewards", episode)
-                    os._exit(1)
-
         broken_bricks_tracking_list.append(controller.broken_bricks())
 
-        if (episode + 1) % 100 == 0 and episode != 0:
-            report(broken_bricks_tracking_list, "performances.png", "rewards", episode)
-            return
-
-        episode += 1
+    report(broken_bricks_tracking_list, "tests/test1/trained_performances.png", "broken bricks", episodes)
 
 
-def load_table():
-    with open('Q_table.pkl', 'rb') as f:
+def load_table(path='Q_table.pkl'):
+    with open(path, 'rb') as f:
         return pickle.load(f)
 
 def report(parameter_list: list, filename: str, parameter_name: str, episodes: int):
@@ -56,7 +47,7 @@ def report(parameter_list: list, filename: str, parameter_name: str, episodes: i
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
     plt.figure()
-    plt.title(f"{parameter_name} ({episodes+1}) episodes")
+    plt.title(f"{parameter_name} ({episodes}) episodes")
     plt.ylabel(parameter_name)
     means_list = [np.mean(c) for c in chunks(parameter_list, 50)]
     x_means = np.arange(25, len(parameter_list), 50)
