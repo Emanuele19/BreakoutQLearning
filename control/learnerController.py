@@ -1,5 +1,6 @@
 from control.abstractController import AbstractController
 from objects.brick import Brick
+from objects.ceiling import Ceiling
 from objects.floor import Floor
 from objects.slider import Slider
 import configs
@@ -8,25 +9,9 @@ import configs
 MIN_PENALTY = -10
 MAX_PENALTY = -100
 TICK_PENALTY = 0.0001
+CEILING_PENALTY = -1
 BOUNCE_REWARD = 1
-BRICK_REWARD = 0.5
-
-# TODO: ogni test va fatto su più iterazioni, prova 30000
-
-# Test parametri 1
-# TICK_PENALTY 0.0001
-# BRICK_REWARD 10
-# BOUNCE_REWARD 1
-# Sembra che raggiunga una media di 3,5 mattoni rotti...troppo poco
-
-# Test parametri 2
-# TICK_PENALTY 0.0001
-# BRICK_REWARD 0.5
-# BOUNCE_REWARD 1
-# Motivo: l'agente deve imparare soprattutto ad intercettare la palla per avere più possibilità di mandare avanti il gioco
-
-# Test 3, 4
-# Come 1 e 2 ma la palla comincia con direzione verso il basso (evita il primo colpo ai mattoni)
+BRICK_REWARD = 10
 
 
 class LearnerController(AbstractController):
@@ -54,6 +39,8 @@ class LearnerController(AbstractController):
             self.last_reward = BOUNCE_REWARD
         elif isinstance(collider, Brick):
             self.last_reward = BRICK_REWARD
+        elif isinstance(collider, Ceiling):
+            self.last_reward = CEILING_PENALTY
         else:
             self.last_reward = TICK_PENALTY
 
