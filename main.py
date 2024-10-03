@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
+# TODO SUPER IMPORTANTE: probabilmente il modo in cui è implementato il rimbalzo rende impossibile prendere tutti i mattoncini
+
 # TODO: fare uno spreadsheet per confrontare le prestazioni del modello allenato su diversi valori di metaparametri
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
 # TODO: sistema di reward per la rottura di mattoncini
