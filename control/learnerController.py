@@ -8,7 +8,7 @@ import configs
 
 MIN_PENALTY = -10
 MAX_PENALTY = -100
-TICK_PENALTY = 0.0001
+TICK_PENALTY = -0.0001
 CEILING_PENALTY = -1
 BOUNCE_REWARD = 1
 BRICK_REWARD = 10
@@ -20,7 +20,7 @@ class LearnerController(AbstractController):
 
     def run_game(self, action: Slider.Action = None) -> bool:
         ret = self.__train(action=action)
-        self.refresh()
+        # self.refresh()
         return ret
 
     def __train(self, action: Slider.Action):
@@ -30,6 +30,7 @@ class LearnerController(AbstractController):
         self.slider.move(action)
 
         self.ball.move()
+        self.refresh()
         collider = self.collisionHandler.check_collision(self.ball)
         if isinstance(collider, Floor):
             distance = self.slider.x - self.ball.x if self.ball.x < self.slider.x else self.ball.x - self.slider.x + self.slider.width
