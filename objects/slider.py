@@ -14,6 +14,7 @@ class Slider(Collidable):
         self.y = configs.HEIGHT - 30
         self.dx = VELOCITY
         self.color = configs.WHITE
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     class Action(Enum):
         IDLE = 0
@@ -31,6 +32,7 @@ class Slider(Collidable):
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        pygame.draw.rect(screen, (0,0,0), (self.x, self.y, 2, 2))
 
     def reset(self):
         self.x = configs.WIDTH // 2 - self.width // 2
