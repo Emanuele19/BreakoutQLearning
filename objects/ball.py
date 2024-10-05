@@ -8,15 +8,19 @@ from objects.ceiling import Ceiling
 from objects.sideWall import SideWall
 from objects.slider import Slider
 
+# TODO: mettilo in una classe apposita o in un'interfaccia/classe astratta "shape"
+def point_in_area(point:tuple[int, int], rect: tuple[int, int, int, int]):
+    return rect[0] <= point[0] <= rect[0] + rect[2] and rect[1] <= point[1] <= rect[1] + rect[3]
 
 class Ball(Collidable):
     def __init__(self):
         # Basic properties
-        self.radius = 10
+        self.length = 20
         self.x = configs.WIDTH // 2
         self.y = configs.HEIGHT // 2
         self.velocity = 8
         self.color = configs.RED
+        self.rect = pygame.Rect(self.x, self.y, self.length, self.length)
 
         # The ball can hit the slider in 5 different sections that determine the ball bouncing angle
         self.bouncing_comps = [(-0.7, 0.7), (-0.2, 0.9), (0, 1), (0.2, 0.9), (0.7, 0.7)]
@@ -35,33 +39,36 @@ class Ball(Collidable):
         self.y += self.dy
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.length, self.length))
+        pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, 2, 2))
 
     def get_boundaries(self) -> [float, float, float, float]:
-        return [self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2]
+        return [self.x, self.y, self.length, self.length]
+
 
     def on_collision(self, other: 'Collidable') -> None:
         if isinstance(other, SideWall):
             if self.x < configs.HEIGHT // 2:
                 self.dx = -self.dx
-                self.x = self.radius + 1
+                self.x = 1
             else:
                 self.dx = -self.dx
-                self.x = configs.WIDTH - 1 - self.radius
+                self.x = configs.WIDTH - 1 - self.length
         elif isinstance(other, Slider):
-            if other.x <= self.x <= other.x + other.width:
+            # if ball's bottom edge is at least partially contained in slider's area and the ball is going downward.
+            bottom_left_point = (self.x, self.y + self.length)
+            bottom_right_point = (self.x + self.length, self.y + self.length)
+            if (point_in_area(bottom_left_point, other.get_boundaries()) or point_in_area(bottom_right_point, other.get_boundaries())) and self.dy > 0:
                 normalized_ball_x = self.x - other.x
                 collision_section = int(normalized_ball_x // (other.width // 5))
                 if collision_section < 0: collision_section = 0
                 comps = self.bouncing_comps[collision_section]
                 self.dx = self.velocity * comps[0]
                 self.dy = self.velocity * comps[1] * -1
-                self.y = other.y - self.radius - 1
-            else:
-                self.dx = -self.dx
+                self.y = other.y - self.length - 1
         elif isinstance(other, Ceiling):
             self.dy = -self.dy
-            self.y = self.radius + 1
+            self.y = 1
         elif isinstance(other, Brick):
             if not other.is_broken:
                 if other.x <= self.x <= other.x + other.w:
@@ -107,3 +114,4 @@ class Ball(Collidable):
         dy = -1 if self.dy < 0 else 1
 
         return dx, dy
+
