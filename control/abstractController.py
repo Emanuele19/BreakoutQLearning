@@ -20,10 +20,10 @@ class AbstractController(ABC):
         self.slider = Slider()
         self.ball = Ball()
         self.ceiling = Ceiling(configs.WIDTH)
-        self.floor = Floor(configs.HEIGHT, configs.WIDTH)
+        self.floor = Floor(self.slider.y, configs.WIDTH)
         self.leftWall = SideWall(1, configs.HEIGHT)
         self.rightWall = SideWall(configs.WIDTH - 1, configs.HEIGHT)
-        self.bricks = [Brick(x, 0, configs.WIDTH // configs.SAMPLING_RATE, 20) for x in range(0, configs.WIDTH, configs.SAMPLING_RATE)]
+        self.bricks = self.__create_bricks(10, 1)
         self.collisionHandler = CollisionHandler([
             self.ball,
             self.slider,
@@ -77,3 +77,13 @@ class AbstractController(ABC):
 
     def broken_bricks(self):
         return len([brick for brick in self.bricks if brick.is_broken])
+
+    """
+    Creates a cluster of n*l bricks, where n is the number of bricks per line and l is the number of lines
+    """
+    def __create_bricks(self, n:int, l:int) -> list[Brick]:
+        brick_height = 20
+        out = []
+        for i in range(l):
+            out += [Brick(x, (brick_height+5)*i, configs.WIDTH // n, brick_height) for x in range(0, configs.WIDTH, configs.WIDTH // n)]
+        return out
