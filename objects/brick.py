@@ -16,6 +16,7 @@ class Brick(Collidable):
     def draw(self, screen):
         if not self.is_broken:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.w, self.h))
+            pygame.draw.rect(screen, (0, 0, 0), (self.x+5, self.y+5, self.w-10, self.h-10))
 
     def reset(self):
         self.is_broken = False
