@@ -16,6 +16,8 @@ import sys
 #       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
 
+# TODO: serializza la Q Table anche con keyboard interrupt, salvala nel file di test apposito...
+
 def main():
     if len(sys.argv) < 2:
         print("[USAGE] python3 main.py path/to/parameters.json")
