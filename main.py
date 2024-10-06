@@ -7,19 +7,30 @@ import pickle
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import json
+import sys
 
-# TODO SUPER IMPORTANTE: probabilmente il modo in cui è implementato il rimbalzo rende impossibile prendere tutti i mattoncini
 
 # TODO: fare uno spreadsheet per confrontare le prestazioni del modello allenato su diversi valori di metaparametri
+# TODO: trovato il set di parametri migliori prova a cambiare i rewards
+#       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
-# TODO: sistema di reward per la rottura di mattoncini
-# TODO: ricerca incremental learning nel contesto del q learning
-# TODO: implementazione
 
 def main():
-    exploration_rate = configs.EPSILON
+    if len(sys.argv) < 2:
+        print("[USAGE] python3 main.py path/to/parameters.json")
 
-    controller = ControllerFactory.get_instance(is_human=False)
+    with open(sys.argv[1], "r") as parameters_file:
+        parameters = json.load(parameters_file)
+
+    metaparameters = parameters["metaparameters"]
+    rewards = parameters["rewards"]
+    output_path = f"./tests/test{metaparameters["id"]}/"
+    os.mkdir(output_path)
+
+    exploration_rate = metaparameters["epsilon"]
+
+    controller = ControllerFactory.get_instance(is_human=False, rewards=rewards)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
     action_space = [action for action in Slider.Action]
     state_space = [(ball_x, ball_y, ball_dir_x, ball_dir_y, slider_x)
@@ -40,7 +51,7 @@ def main():
     broken_bricks_list = []
 
     controller.reset()
-    for episode in range(configs.EPISODES):
+    for episode in range(metaparameters["episodes"]):
         running = True
         print(f"Running episode: {episode}")
         while running:
@@ -61,30 +72,30 @@ def main():
                 running = False
 
             # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, configs.LEARNING_RATE, configs.DISCOUNT_FACTOR)
+            update_table(Q, state, action, reward, new_state, metaparameters["learning_rate"], metaparameters["discount_factor"])
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
-                    serialize_table(Q)
-                    report(reward_traking_list)
+                    serialize_table(output_path, Q)
+                    report(reward_traking_list, output_path)
                     os._exit(1)
 
 
-        exploration_rate = epsilon_decay(episode)
+        exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
         epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
         broken_bricks_list.append(controller.broken_bricks())
 
         if (episode + 1) % 500 == 0 and episode != 0:
-            plot_performance(reward_traking_list, "obtained_rewards.png", "rewards", episode)
-            plot_performance(epsilon_tracking_list, "exploration_rate_decay.png", "epsilon", episode)
-            plot_performance(broken_bricks_list, "broken_bricks.png", "broken bricks", episode)
+            plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
+            plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
+            plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
 
         controller.reset()
     pygame.quit()
 
-    report(reward_traking_list)
-    serialize_table(Q)
+    report(reward_traking_list, output_path)
+    serialize_table(Q, output_path)
 
 
 # Scelta "epsilon" greedy
@@ -100,10 +111,10 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
     max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
-def epsilon_decay(current_episode: int) -> float:
-    return max(configs.MIN_EPSILON, configs.EPSILON - current_episode * (configs.EPSILON - configs.MIN_EPSILON) / configs.EPISODES)
+def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
+    return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
 
-def serialize_table(q):
+def serialize_table(q, path):
     with open('Q_table.pkl', 'wb') as f:
         pickle.dump(q, f)
 
@@ -126,7 +137,7 @@ def plot_performance(parameter_list: list, filename: str, parameter_name: str, e
     plt.close()
 
 """Serializes a list containing the total rewards obtained per episode"""
-def report(parameter_list: list):
+def report(parameter_list: list, path):
     with open("rewards_per_episode.pkl", "wb") as f:
         pickle.dump(parameter_list, f)
 

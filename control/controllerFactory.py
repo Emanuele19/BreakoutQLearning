@@ -11,8 +11,8 @@ and LearnerController (used for training and post-training model testing).
 class ControllerFactory(metaclass=SingletonMeta):
 
     @staticmethod
-    def get_instance(is_human=False) -> AbstractController:
+    def get_instance(is_human=False, rewards=None) -> AbstractController:
         if is_human:
             return HumanController()
         else:
-            return LearnerController()
+            return LearnerController(rewards=rewards) if rewards is not None else LearnerController()
