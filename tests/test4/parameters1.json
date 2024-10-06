@@ -1,0 +1,18 @@
+{
+  "metaparameters": {
+    "id": 4,
+    "epsilon": 0.9,
+    "min_epsilon": 0.1,
+    "learning_rate": 0.1,
+    "discount_factor": 0.99,
+    "episodes": 50000
+  },
+  "rewards": {
+    "min_penalty": -10,
+    "max_penalty": -100,
+    "tick_penalty": -0.0001,
+    "ceiling_penalty": -1,
+    "bounce_reward": 1,
+    "brick_reward": 10
+  }
+}
