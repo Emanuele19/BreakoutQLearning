@@ -79,7 +79,7 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
-                    serialize_table(output_path, Q)
+                    serialize_table(Q, output_path)
                     report(reward_traking_list, output_path)
                     os._exit(1)
 
@@ -118,7 +118,7 @@ def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
 
 def serialize_table(q, path):
-    with open('Q_table.pkl', 'wb') as f:
+    with open(f'{path}Q_table.pkl', 'wb') as f:
         pickle.dump(q, f)
 
 def load_table():
@@ -141,7 +141,7 @@ def plot_performance(parameter_list: list, filename: str, parameter_name: str, e
 
 """Serializes a list containing the total rewards obtained per episode"""
 def report(parameter_list: list, path):
-    with open("rewards_per_episode.pkl", "wb") as f:
+    with open(f"{path}rewards_per_episode.pkl", "wb") as f:
         pickle.dump(parameter_list, f)
 
 if __name__ == "__main__":
