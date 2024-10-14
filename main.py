@@ -18,6 +18,11 @@ import sys
 
 # TODO: e se non dessi alcun bouncing reward? Lo slider sarà comunque incentivato ad avvicinarsi alla palla per via della penalty
 #       e potrei evitare di far bloccare l'agente in politiche sub-ottimali.
+
+# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
+#       mentre la somma dei quadrati dei learning rate diverga
+
+
 def main():
     if len(sys.argv) < 2:
         print("[USAGE] python3 main.py path/to/parameters.json")
