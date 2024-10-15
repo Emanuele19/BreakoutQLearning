@@ -16,11 +16,9 @@ import sys
 #       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
 
-# TODO: e se non dessi alcun bouncing reward? Lo slider sarà comunque incentivato ad avvicinarsi alla palla per via della penalty
-#       e potrei evitare di far bloccare l'agente in politiche sub-ottimali.
-
 # TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
 #       mentre la somma dei quadrati dei learning rate diverga
+#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
 
 
 def main():
@@ -31,6 +29,7 @@ def main():
         parameters = json.load(parameters_file)
 
     metaparameters = parameters["metaparameters"]
+    learning_rate = parameters["learning_rate"]
     rewards = parameters["rewards"]
     output_path = f"./tests/test{metaparameters["id"]}/"
     os.mkdir(output_path)
@@ -79,7 +78,7 @@ def main():
                 running = False
 
             # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, metaparameters["learning_rate"], metaparameters["discount_factor"])
+            update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
@@ -123,6 +122,9 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
+
+def alpha_decay() -> float:
+    ...
 
 def serialize_table(q, path):
     with open(f'{path}Q_table.pkl', 'wb') as f:
