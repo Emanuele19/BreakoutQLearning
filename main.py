@@ -105,9 +105,12 @@ def main():
     serialize_table(Q, output_path)
 
 
-# Scelta "epsilon" greedy
-# Con probabilità epsilon (p) fai la scelta greedy, con quella complementare fai una scelta casuale
-def choose_action(q_table, current_state, action_space, p):
+
+def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
+    """
+    ε-greedy policy implementation, necessary condition for q-learning convergence
+    :returns the greedy choice (from q table) with ε probaility and a random choice with 1-ε
+    """
     if random.uniform(0, 1) < p:
         return random.choice(action_space)
     else:
@@ -143,8 +146,9 @@ def plot_performance(parameter_list: list, filename: str, parameter_name: str, e
     plt.savefig(filename)
     plt.close()
 
-"""Serializes a list containing the total rewards obtained per episode"""
+
 def report(parameter_list: list, path):
+    """Serializes a list containing the total rewards obtained per episode"""
     with open(f"{path}rewards_per_episode.pkl", "wb") as f:
         pickle.dump(parameter_list, f)
 
