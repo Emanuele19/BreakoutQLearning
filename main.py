@@ -16,12 +16,6 @@ import sys
 #       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
 
-# TODO: e se non dessi alcun bouncing reward? Lo slider sarà comunque incentivato ad avvicinarsi alla palla per via della penalty
-#       e potrei evitare di far bloccare l'agente in politiche sub-ottimali.
-
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-
 
 def main():
     if len(sys.argv) < 2:
