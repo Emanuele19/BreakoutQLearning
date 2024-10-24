@@ -88,6 +88,7 @@ def main():
 
 
         exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
+        learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
         epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
         broken_bricks_list.append(controller.broken_bricks())
@@ -123,8 +124,18 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
 
-def alpha_decay() -> float:
-    ...
+def alpha_decay(alpha_0: float, decay_rate: float, epsisode: int) -> float:
+    '''
+    :param alpha_0 initial learning rate
+    :param decay_rate exponent (lambda), is a positive value
+    :param epsisode current episode
+    :return: calculated learning rate
+
+    Applies the formula αn = α0 ⋅ e^(-λn) where an is the calculated LR, a0 is the initial LR, λ is the decay rate and
+    n is the number of episodes ellapsed.
+    '''
+
+    return alpha_0 * np.exp(-decay_rate * epsisode)
 
 def serialize_table(q, path):
     with open(f'{path}Q_table.pkl', 'wb') as f:
