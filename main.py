@@ -29,7 +29,7 @@ def main():
         parameters = json.load(parameters_file)
 
     metaparameters = parameters["metaparameters"]
-    learning_rate = parameters["learning_rate"]
+    learning_rate = metaparameters["learning_rate"]
     rewards = parameters["rewards"]
     output_path = f"./tests/test{metaparameters["id"]}/"
     os.mkdir(output_path)
@@ -55,6 +55,7 @@ def main():
     reward_traking_list = []
     epsilon_tracking_list = []
     broken_bricks_list = []
+    alpha_tracking_list = []
 
     controller.reset()
     for episode in range(metaparameters["episodes"]):
@@ -89,14 +90,16 @@ def main():
 
         exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
         learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
-        epsilon_tracking_list.append(exploration_rate)
+        # epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
         broken_bricks_list.append(controller.broken_bricks())
+        alpha_tracking_list.append(learning_rate)
 
         if (episode + 1) % 500 == 0 and episode != 0:
             plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
-            plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
+            # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
             plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
+            plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
         controller.reset()
     pygame.quit()
