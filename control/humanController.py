@@ -13,7 +13,7 @@ class HumanController(AbstractController):
     def run_game(self, action: Slider.Action = None) -> bool:
         result = self.__play()
         self.refresh()
-        return result
+        return result or super().is_ended()
 
     def __play(self):
         self.clock.tick(configs.PLAY_FPS)
