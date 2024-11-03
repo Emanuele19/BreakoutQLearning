@@ -1,0 +1,6 @@
+verso le 50000 iterazioni si ha:
+Learning Rate: ~0.02
+Exploration Rate: ~0.505
+
+Quindi si una probabilità del 50% di prendere una scelta casuale ed un LR
+basso, forse andrebbe rallentata la discesa del LR (modifica LR decay factor)
