@@ -16,6 +16,10 @@ import sys
 #       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
 # RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
 
+# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
+#       mentre la somma dei quadrati dei learning rate diverga
+#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
+
 
 def main():
     if len(sys.argv) < 2:
@@ -25,6 +29,7 @@ def main():
         parameters = json.load(parameters_file)
 
     metaparameters = parameters["metaparameters"]
+    learning_rate = metaparameters["learning_rate"]
     rewards = parameters["rewards"]
     output_path = f"./tests/test{metaparameters["id"]}/"
     os.mkdir(output_path)
@@ -50,6 +55,7 @@ def main():
     reward_traking_list = []
     epsilon_tracking_list = []
     broken_bricks_list = []
+    alpha_tracking_list = []
 
     controller.reset()
     for episode in range(metaparameters["episodes"]):
@@ -73,7 +79,7 @@ def main():
                 running = False
 
             # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, metaparameters["learning_rate"], metaparameters["discount_factor"])
+            update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
@@ -83,14 +89,17 @@ def main():
 
 
         exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
-        epsilon_tracking_list.append(exploration_rate)
+        learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
+        # epsilon_tracking_list.append(exploration_rate)
         reward_traking_list.append(controller.get_total_reward())
         broken_bricks_list.append(controller.broken_bricks())
+        alpha_tracking_list.append(learning_rate)
 
         if (episode + 1) % 500 == 0 and episode != 0:
             plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
-            plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
+            # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
             plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
+            plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
         controller.reset()
     pygame.quit()
@@ -117,6 +126,19 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
+
+def alpha_decay(alpha_0: float, decay_rate: float, epsisode: int) -> float:
+    '''
+    :param alpha_0 initial learning rate
+    :param decay_rate exponent (lambda), is a positive value
+    :param epsisode current episode
+    :return: calculated learning rate
+
+    Applies the formula αn = α0 ⋅ e^(-λn) where an is the calculated LR, a0 is the initial LR, λ is the decay rate and
+    n is the number of episodes ellapsed.
+    '''
+
+    return alpha_0 * np.exp(-decay_rate * epsisode)
 
 def serialize_table(q, path):
     with open(f'{path}Q_table.pkl', 'wb') as f:

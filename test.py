@@ -11,7 +11,7 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q = load_table('Q_table.pkl')
+    Q = load_table('tests/test10/Q_table.pkl')
 
     broken_bricks_tracking_list = []
 
