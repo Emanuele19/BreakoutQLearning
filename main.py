@@ -11,15 +11,11 @@ import json
 import sys
 
 
-# TODO: fare uno spreadsheet per confrontare le prestazioni del modello allenato su diversi valori di metaparametri
-# TODO: trovato il set di parametri migliori prova a cambiare i rewards
-#       sembra che l'agente si soffermi temporaneamente a palleggiare a vuoto, la penalty temporale no è abbastanza incisiva
-# RICERCA: in ambienti completamente deterministici un learning rate di 1 è ottimo??? Questo è un ambiente deterministico?
-
 # TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
 #       mentre la somma dei quadrati dei learning rate diverga
 #       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
 
+MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
 def main():
     if len(sys.argv) < 2:
@@ -60,7 +56,9 @@ def main():
     controller.reset()
     for episode in range(metaparameters["episodes"]):
         running = True
-        print(f"Running episode: {episode}")
+        if (episode % 50) == 0:
+            print(f"Running episode: {episode}")
+        frame_counter = 0
         while running:
             # 1. Osserva lo stato corrente
             state = controller.get_game_state()
@@ -73,10 +71,15 @@ def main():
 
             new_state = controller.get_game_state()
             reward = controller.get_reward()
+            frame_counter += 1
 
             if controller.is_ended():
                 reward = 1000  # Win reward
                 running = False
+            elif frame_counter >= MAX_FRAMES:
+                reward = -10    # Time lost penalty #TODO: proporzionale al numero di blocchi rimasti?
+                running = False
+                print("Time")
 
             # 4. Aggiorna la tabella
             update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
@@ -127,18 +130,18 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
 
-def alpha_decay(alpha_0: float, decay_rate: float, epsisode: int) -> float:
-    '''
-    :param alpha_0 initial learning rate
-    :param decay_rate exponent (lambda), is a positive value
-    :param epsisode current episode
-    :return: calculated learning rate
-
+def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
+    """
     Applies the formula αn = α0 ⋅ e^(-λn) where an is the calculated LR, a0 is the initial LR, λ is the decay rate and
-    n is the number of episodes ellapsed.
-    '''
+    n is the number of episodes elapsed.
 
-    return alpha_0 * np.exp(-decay_rate * epsisode)
+    :param: alpha_0 initial learning rate
+    :param: decay_rate exponent (lambda), is a positive value
+    :param: episode current episode
+    :return: calculated learning rate
+    """
+
+    return alpha_0 * np.exp(-decay_rate * episode)
 
 def serialize_table(q, path):
     with open(f'{path}Q_table.pkl', 'wb') as f:
