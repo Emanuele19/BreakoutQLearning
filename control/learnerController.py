@@ -36,7 +36,7 @@ class LearnerController(AbstractController):
         collider = self.collisionHandler.check_collision(self.ball)
         if isinstance(collider, Floor):
             distance = self.slider.x - self.ball.x if self.ball.x < self.slider.x else self.ball.x - self.slider.x + self.slider.width
-            self.last_reward = max(self.rewards["min_penalty"], self.rewards["max_penalty"] * (float(distance) / configs.WIDTH))  # Penalty proportional to distance
+            self.last_reward = min(self.rewards["min_penalty"], self.rewards["max_penalty"] * (float(distance) / configs.WIDTH))  # Penalty proportional to distance
             return False
         elif isinstance(collider, Slider):
             self.last_reward = self.rewards["bounce_reward"]
