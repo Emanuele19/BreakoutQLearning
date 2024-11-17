@@ -11,9 +11,11 @@ import json
 import sys
 
 
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
+# Ulteriori consigli di chatty:
+# - Controllare che la penalty per la caduta della palla non sia troppo incisiva, l'agente potrebbe essere più focalizzato nel prendere la palla che nel cercare di vincere
+# -
+
+# TODO: riguardo al fix della "fall-off" penalty...testalo...perché funzionava prima? Ora funziona ancora?
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -26,6 +28,7 @@ def main():
 
     metaparameters = parameters["metaparameters"]
     learning_rate = metaparameters["learning_rate"]
+    q_update_frequency = metaparameters["q_update_frequency"]
     rewards = parameters["rewards"]
     output_path = f"./tests/test{metaparameters["id"]}/"
     os.mkdir(output_path)
@@ -59,6 +62,7 @@ def main():
         if (episode % 50) == 0:
             print(f"Running episode: {episode}")
         frame_counter = 0
+        chunk_reward = 0
         while running:
             # 1. Osserva lo stato corrente
             state = controller.get_game_state()
@@ -81,8 +85,13 @@ def main():
                 running = False
                 print("Time")
 
+            chunk_reward += reward
+
             # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
+            if frame_counter % q_update_frequency == 0 or not running:
+                update_table(Q, state, action, chunk_reward, new_state, learning_rate, metaparameters["discount_factor"])
+#                reward_traking_list.append(chunk_reward)
+                chunk_reward = 0
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
@@ -94,12 +103,12 @@ def main():
         exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
         learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
         # epsilon_tracking_list.append(exploration_rate)
-        reward_traking_list.append(controller.get_total_reward())
+
         broken_bricks_list.append(controller.broken_bricks())
         alpha_tracking_list.append(learning_rate)
 
         if (episode + 1) % 500 == 0 and episode != 0:
-            plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
+            #plot(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
             # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
             plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
             plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
