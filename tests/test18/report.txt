@@ -1,0 +1,3 @@
+La discretizzazione per chunk (test 14-16) ha dato risultati pessimi, l'agente non imparava
+Il test 17 è stato interrotto per non disponibilità di tempo e il test 18 ha la stessa configurazione del 17 ma è portato fino a convergenza.
+Per i test 18 (discretizzazione dell'aggiornamento) l'agente non sembra più "bloccarsi" tuttavia ha presentato risultati pessimi (media di 3 mattoni rotti)

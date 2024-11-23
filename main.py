@@ -62,7 +62,7 @@ def main():
         if (episode % 50) == 0:
             print(f"Running episode: {episode}")
         frame_counter = 0
-        chunk_reward = 0
+        update_buffer = []
         while running:
             # 1. Osserva lo stato corrente
             state = controller.get_game_state()
@@ -85,13 +85,14 @@ def main():
                 running = False
                 print("Time")
 
-            chunk_reward += reward
+            update_buffer.append((state, action, reward, new_state))
 
             # 4. Aggiorna la tabella
             if frame_counter % q_update_frequency == 0 or not running:
-                update_table(Q, state, action, chunk_reward, new_state, learning_rate, metaparameters["discount_factor"])
+                for s, a, r, ns in update_buffer:
+                    update_table(Q, s, a, r, ns, learning_rate, metaparameters["discount_factor"])
 #                reward_traking_list.append(chunk_reward)
-                chunk_reward = 0
+                update_buffer.clear()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("pygame.QUIT")
