@@ -10,10 +10,11 @@ import numpy as np
 import json
 import sys
 
-
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
+# TODO: test da fare
+# 1. rendere la "tick_penalty" una "tick_reward" e vedere se il modello impara a non far cadere la palla
+# 2. aumentare "brick_reward".
+# 3. togliere la feature della direzione verticale della palla
+# 4. aumentare la granularità della discretizzazione
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -74,10 +75,10 @@ def main():
             frame_counter += 1
 
             if controller.is_ended():
-                reward = 1000  # Win reward
+                reward = metaparameters["win_reward"]
                 running = False
             elif frame_counter >= MAX_FRAMES:
-                reward = -10    # Time lost penalty #TODO: proporzionale al numero di blocchi rimasti?
+                reward = metaparameters["time_exceeded_penalty"]
                 running = False
                 print("Time")
 
