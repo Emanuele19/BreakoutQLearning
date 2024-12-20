@@ -74,10 +74,10 @@ def main():
             frame_counter += 1
 
             if controller.is_ended():
-                reward = 1000  # Win reward
+                reward = metaparameters["win_reward"]
                 running = False
             elif frame_counter >= MAX_FRAMES:
-                reward = -10    # Time lost penalty #TODO: proporzionale al numero di blocchi rimasti?
+                reward = metaparameters["time_exceeded_penalty"]
                 running = False
                 print("Time")
 
