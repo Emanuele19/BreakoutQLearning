@@ -84,34 +84,23 @@ class Ball(Collidable):
     #       have a limited precision. This is one of the main limitations of Q-Learning
 
     @property
-    def discrete_position(self) -> (int, int):
+    def discrete_position(self) -> int:
         if self.x < 0: self.x = 0
-        if self.y < 0: self.y = 0
         if self.x > configs.WIDTH: self.x = configs.WIDTH
-        if self.y > configs.HEIGHT: self.y = configs.HEIGHT
 
         dx = self.x // (configs.WIDTH // configs.SAMPLING_RATE)
-        dy = self.y // (configs.HEIGHT // configs.SAMPLING_RATE)
 
         # Boundary escape prevention
         if dx >= 30:
             dx = 29
 
-        if dy >= 30:
-            dy = 29
-
-        if dy < 0:
-            dy = 1
-
         if dx < 0:
             dx = 0
 
-        return dx, dy
+        return dx
 
     @property
-    def discrete_direction(self) -> (int, int):
+    def discrete_direction(self) -> int:
         dx = -1 if self.dx < 0 else 1
-        dy = -1 if self.dy < 0 else 1
-
-        return dx, dy
+        return dx
 

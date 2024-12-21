@@ -9,6 +9,9 @@ import os
 import numpy as np
 import json
 import sys
+import itertools
+
+os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
 
 
 # TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
@@ -35,12 +38,11 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False, rewards=rewards)
     # action_space e state_space sono tutte le possibili azioni e tutti i possibili stati
     action_space = [action for action in Slider.Action]
-    state_space = [(ball_x, ball_y, ball_dir_x, ball_dir_y, slider_x)
+    state_space = [(ball_x, ball_dir_x, slider_x, brick_state)
                    for ball_x in range(configs.SAMPLING_RATE)
-                   for ball_y in range(configs.SAMPLING_RATE)
                    for ball_dir_x in [1, -1]
-                   for ball_dir_y in [1, -1]
-                   for slider_x in range(configs.SAMPLING_RATE)]
+                   for slider_x in range(configs.SAMPLING_RATE)
+                   for brick_state in tuple(itertools.product([True, False], repeat=len(controller.bricks)))]
 
     # Inizializzazione della tabella
     Q = {}
@@ -54,57 +56,65 @@ def main():
     alpha_tracking_list = []
 
     controller.reset()
-    for episode in range(metaparameters["episodes"]):
-        running = True
-        if (episode % 50) == 0:
-            print(f"Running episode: {episode}")
-        frame_counter = 0
-        while running:
-            # 1. Osserva lo stato corrente
-            state = controller.get_game_state()
-
-            # 2. Scegli un'azione
-            action = choose_action(Q, state, action_space, exploration_rate)
-
-            # 3. Esegui l'azione
-            running = controller.run_game(action)
-
-            new_state = controller.get_game_state()
-            reward = controller.get_reward()
-            frame_counter += 1
-
-            if controller.is_ended():
-                reward = metaparameters["win_reward"]
-                running = False
-            elif frame_counter >= MAX_FRAMES:
-                reward = metaparameters["time_exceeded_penalty"]
-                running = False
-                print("Time")
-
-            # 4. Aggiorna la tabella
-            update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    print("pygame.QUIT")
-                    serialize_table(Q, output_path)
-                    report(reward_traking_list, output_path)
-                    os._exit(1)
 
 
-        exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
-        learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
-        # epsilon_tracking_list.append(exploration_rate)
-        reward_traking_list.append(controller.get_total_reward())
-        broken_bricks_list.append(controller.broken_bricks())
-        alpha_tracking_list.append(learning_rate)
+    try:
+        for episode in range(metaparameters["episodes"]):
+            running = True
+            if (episode % 50) == 0:
+                print(f"Running episode: {episode}")
+            frame_counter = 0
+            while running:
+                # 1. Osserva lo stato corrente
+                state = controller.get_game_state()
 
-        if (episode + 1) % 500 == 0 and episode != 0:
-            plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
-            # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
-            plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
-            plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
+                # 2. Scegli un'azione
+                action = choose_action(Q, state, action_space, exploration_rate)
 
-        controller.reset()
+                # 3. Esegui l'azione
+                running = controller.run_game(action)
+
+                new_state = controller.get_game_state()
+                reward = controller.get_reward()
+                frame_counter += 1
+
+                if controller.is_ended():
+                    reward = rewards["win_reward"]
+                    running = False
+                elif frame_counter >= MAX_FRAMES:
+                    reward = rewards["time_exceeded_penalty"]
+                    running = False
+                    print("Time")
+
+                # 4. Aggiorna la tabella
+                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        print("pygame.QUIT")
+                        serialize_table(Q, output_path)
+                        report(reward_traking_list, output_path)
+                        os._exit(1)
+
+
+            exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
+            learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
+            # epsilon_tracking_list.append(exploration_rate)
+            reward_traking_list.append(controller.get_total_reward())
+            broken_bricks_list.append(controller.broken_bricks())
+            alpha_tracking_list.append(learning_rate)
+
+            if (episode + 1) % 500 == 0 and episode != 0:
+                plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
+                # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
+                plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
+                plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
+
+            controller.reset()
+
+    except KeyboardInterrupt as e:
+        print("KeyboardInterrupt")
+        serialize_table(Q, output_path)
+        report(reward_traking_list, output_path)
     pygame.quit()
 
     report(reward_traking_list, output_path)
