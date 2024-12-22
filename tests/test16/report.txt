@@ -1,0 +1,3 @@
+Questo test serve per confrontare learning rate con decadimento esponenziale e senza decadimento.
+LR = 0.1
+Risultati: 6.5 (+-2), risultati molto migliorati.

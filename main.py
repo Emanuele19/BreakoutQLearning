@@ -97,8 +97,7 @@ def main():
 
 
             exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
-            learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
-            # epsilon_tracking_list.append(exploration_rate)
+            # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
             reward_traking_list.append(controller.get_total_reward())
             broken_bricks_list.append(controller.broken_bricks())
             alpha_tracking_list.append(learning_rate)
@@ -150,7 +149,6 @@ def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
     :param: episode current episode
     :return: calculated learning rate
     """
-
     return alpha_0 * np.exp(-decay_rate * episode)
 
 def serialize_table(q, path):
