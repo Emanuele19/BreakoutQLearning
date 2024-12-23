@@ -1,0 +1,4 @@
+Questo test viene fatto sulla base del test 16, quindi senza il decadimento del learning rate.
+In più è stato alzato il learning rate a 0.2 per verificare se il modello riesce a convergere più velocemente.
+
+Risultati: peggioramento, 5 (+-1)
