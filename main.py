@@ -133,6 +133,7 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
 
 
 def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor):
+    # TODO: se lo stato è terminale devi impostare max_future_reward = 0
     max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
