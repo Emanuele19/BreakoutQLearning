@@ -1,6 +1,6 @@
 # Program settings
 WIDTH, HEIGHT = 800, 600
-TRAIN_FPS = 2000
+TRAIN_FPS = 1000
 PLAY_FPS = 60
 SAMPLING_RATE = 20  # to make contiguous values discrete
 

@@ -1,4 +1,7 @@
+import time
+
 import pygame
+
 import configs
 from control.controllerFactory import ControllerFactory
 from objects.slider import Slider
@@ -16,7 +19,8 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from collections import deque
 
-os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
+
+# os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -55,7 +59,7 @@ def main():
     try:
         for episode in range(metaparameters["episodes"]):
             running = True
-            if (episode % 50) == 0:
+            if (episode % 50) != 0:
                 print(f"Running episode: {episode}")
             frame_counter = 0
             while running:
@@ -83,10 +87,16 @@ def main():
                 done = not running  # Se il gioco è terminato
 
                 # 4. Memorizza l'esperienza nella replay buffer
-                store_experience(replay_buffer, state, action, reward, new_state, done)
+                store_experience(replay_buffer,
+                                 preprocess_state(state),
+                                 action_to_index(action),
+                                 reward,
+                                 preprocess_state(new_state),
+                                 done)
 
                 # 5. Aggiorna il modello
-                train_dqn(model, replay_buffer, metaparameters['batch_size'], rewards['discount_factor'])
+                if frame_counter % 10 == 0:
+                    train_dqn(model, replay_buffer, metaparameters['batch_size'], metaparameters['discount_factor'])
 
                 # 6. Aggiorna il tasso di esplorazione
                 for event in pygame.event.get():
@@ -118,6 +128,19 @@ def main():
     report(reward_traking_list, output_path)
     model.save(f"{output_path}model.h5")
 
+def action_to_index(action: Slider.Action) -> int:
+    return {action: idx for idx, action in enumerate(Slider.Action)}[action]
+
+def index_to_action(index: int) -> Slider.Action:
+    return {idx: action for idx, action in enumerate(Slider.Action)}[index]
+
+def preprocess_state(state: list) -> np.array:
+    int1, int2, int3, bool_list = state
+    bool_array = np.array(bool_list, dtype=np.float32)
+    processed_state = np.array([int1, int2, int3], dtype=np.float32)
+    processed_state = np.concatenate([processed_state, bool_array])
+
+    return processed_state
 
 def choose_action(model, state, action_space, exploration_rate):
     """
@@ -127,8 +150,8 @@ def choose_action(model, state, action_space, exploration_rate):
     if np.random.rand() < exploration_rate:
         return np.random.choice(action_space)
     else:
-        q_values = model.predict(state.reshape(1, -1), verbose=0)  # Predict Q values
-        return np.argmax(q_values[0])
+        q_values = model.predict(preprocess_state(state).reshape(1, -1), verbose=0)  # Predict Q values
+        return index_to_action(np.argmax(q_values[0]))
 
 
 def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor):
@@ -184,15 +207,14 @@ def store_experience(replay_buffer, state, action, reward, next_state, done):
     replay_buffer.append((state, action, reward, next_state, done))
 
 def train_dqn(model, replay_buffer, batch_size, gamma):
-    if len(replay_buffer) < batch_size:
+    if len(replay_buffer) < batch_size or len(replay_buffer) < 10000:
         return  # Aspetta di avere abbastanza esperienze nel buffer
-
     # Campiona un batch di esperienze dal buffer
     minibatch = random.sample(replay_buffer, batch_size)
 
     # Prepara le variabili per il training
     states = np.array([exp[0] for exp in minibatch])
-    actions = np.array([exp[1] for exp in minibatch])
+    actions = np.array([exp[1] for exp in minibatch]).tolist()
     rewards = np.array([exp[2] for exp in minibatch])
     next_states = np.array([exp[3] for exp in minibatch])
     dones = np.array([exp[4] for exp in minibatch])
@@ -213,5 +235,8 @@ def train_dqn(model, replay_buffer, batch_size, gamma):
     model.fit(states, q_values, verbose=0, batch_size=batch_size)
 
 
+import tensorflow as tf
 if __name__ == "__main__":
-    main()
+    # tf.debugging.set_log_device_placement(True)
+    with tf.device('/device:CPU:0'):
+        main()

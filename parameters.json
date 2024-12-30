@@ -1,12 +1,12 @@
 {
   "metaparameters": {
-    "id": 17,
+    "id": 20,
     "epsilon": 1,
     "min_epsilon": 0.01,
-    "learning_rate": 0.2,
-    "alpha_decay": 0.00003,
+    "learning_rate": 0.1,
     "discount_factor": 0.95,
-    "episodes": 100000
+    "episodes": 100000,
+    "batch_size": 256
   },
   "rewards": {
     "min_penalty": -10,
@@ -14,7 +14,7 @@
     "tick_penalty": -0.001,
     "ceiling_penalty": -1,
     "bounce_reward": 1,
-    "brick_reward": 10,
+    "brick_reward": 50,
     "time_exceeded_penalty": -10,
     "win_reward": 1000
   }
