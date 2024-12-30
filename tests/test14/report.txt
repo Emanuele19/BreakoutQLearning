@@ -1,0 +1,14 @@
+Questo è il primo test fatto dopo l'update allo spazo degli stati.
+Cambiamenti:
+- Lo spazio degli stati ora comprende (ball_x, ball_dir_x, slider_x, bricks)
+- bricks è una lista di booleani che rappresenta lo stato dei mattoncini
+- Al momento c'è una sola fila di mattoncini, ne sono 10 e ogniuno è grande quanto due celle.
+- Lo slider adesso è grande quanto tre celle.
+
+Risultati:
+- Risolto il problema dello slider che si blocca
+- L'agente ha cominciato a vincere solo negli ultimi episodi.
+- Il miglioramento medio è lineare
+- Il tempo di training è diminuito
+- Lo spazio richiesto è aumentato di molto (circa 800.000 stati)
+- I mattoncini rotti in media sono 5 (+- 2)

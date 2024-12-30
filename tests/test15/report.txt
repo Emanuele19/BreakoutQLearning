@@ -1,0 +1,2 @@
+Modifica ai parametri: tick_penalty -0.001 -> 0.01
+Risultati: 4 (+-2), peggiore del test precedente
