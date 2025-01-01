@@ -1,0 +1,3 @@
+Questo test è stato fatto aumentando la sampling rate in modo che ogni sezione dello slider (sono 5) si trovi in uno stato discreto distinto.
+Le prestazioni non sono un granché ma l'agente non si blocca in loop.
+Bisogna comprendere se la probabilità di rimanere in un loop aumenti con l'aumentare delle performance.

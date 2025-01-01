@@ -14,9 +14,7 @@ import itertools
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
 
 
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
+# TODO: Implementa e valuta il replay buffer
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -57,13 +55,13 @@ def main():
 
     controller.reset()
 
-
     try:
         for episode in range(metaparameters["episodes"]):
             running = True
             if (episode % 50) == 0:
                 print(f"Running episode: {episode}")
             frame_counter = 0
+            is_terminal_state = False
             while running:
                 # 1. Osserva lo stato corrente
                 state = controller.get_game_state()
@@ -73,6 +71,7 @@ def main():
 
                 # 3. Esegui l'azione
                 running = controller.run_game(action)
+                is_terminal_state = not running
 
                 new_state = controller.get_game_state()
                 reward = controller.get_reward()
@@ -80,14 +79,14 @@ def main():
 
                 if controller.is_ended():
                     reward = rewards["win_reward"]
-                    running = False
+                    running = is_teminal_state = False
                 elif frame_counter >= MAX_FRAMES:
                     reward = rewards["time_exceeded_penalty"]
-                    running = False
+                    running = is_terminal_state = False
                     print("Time")
 
                 # 4. Aggiorna la tabella
-                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
+                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"], is_terminal_state)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         print("pygame.QUIT")
@@ -132,9 +131,12 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
         return max(q_table[current_state], key=q_table[current_state].get)
 
 
-def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor):
+def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state):
     # TODO: se lo stato è terminale devi impostare max_future_reward = 0
-    max_future_reward = max(q_table[new_state].values())
+    if is_terminal_state:
+        max_future_reward = 0
+    else:
+        max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:

@@ -8,7 +8,7 @@ VELOCITY = 16
 
 class Slider(Collidable):
     def __init__(self):
-        self.width = configs.WIDTH // configs.SAMPLING_RATE * 3
+        self.width = configs.WIDTH // configs.SAMPLING_RATE * 5
         self.height = 10
         self.x = configs.WIDTH // 2 - self.width // 2
         self.y = configs.HEIGHT - 30

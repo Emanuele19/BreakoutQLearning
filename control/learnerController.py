@@ -4,6 +4,7 @@ from objects.ceiling import Ceiling
 from objects.floor import Floor
 from objects.slider import Slider
 import configs
+from collections import deque
 
 
 default_rewards = {
@@ -19,6 +20,7 @@ class LearnerController(AbstractController):
     def __init__(self, rewards: dict = default_rewards):
         super().__init__()
         self.rewards = rewards
+        self.bouncing_spots = deque(maxlen=2)
 
     def run_game(self, action: Slider.Action = None) -> bool:
         ret = self.__train(action=action)
@@ -43,7 +45,11 @@ class LearnerController(AbstractController):
         elif isinstance(collider, Brick):
             self.last_reward = self.rewards["brick_reward"]
         elif isinstance(collider, Ceiling):
-            self.last_reward = self.rewards["ceiling_penalty"]
+            if self.ball.x in self.bouncing_spots:
+                self.last_reward = self.rewards["same_spot_penalty"]
+            else:
+                self.last_reward = self.rewards["ceiling_penalty"]
+                self.bouncing_spots.append(self.ball.x)
         else:
             self.last_reward = self.rewards["tick_penalty"]
 

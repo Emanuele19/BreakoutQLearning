@@ -1,0 +1,3 @@
+Quando si raggiunge uno stato terminale l'aggiornamento della q table è diverso.
+Questo test viene fatto in seguito di questa modifica con i parametri più performanti ad oggi (test 16).
+Risultato non valutabie: di nuovo il problema dei cicli infiniti.

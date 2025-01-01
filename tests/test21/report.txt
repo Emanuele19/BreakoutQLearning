@@ -1,0 +1,8 @@
+Questo test è stato fatto mettendo una penalità alle azioni cicliche.
+Guardando il grafico dei reward noto che verso la fine c'è un picco negativo. Probabilmente l'agente ha bisogno di più
+episodi per imparare a non fare azioni cicliche.
+
+Tuttavia proverò ad ottimizzare per non aumentare il numero di episodi.
+Questo test è fallito, l'agente non è riuscito a imparare a non fare azioni cicliche.
+I risultati nel file "trrained_performances" sono stati generati facendo scegliere l'azione migliore all'agente solo
+il 10% delle volte.

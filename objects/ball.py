@@ -91,8 +91,8 @@ class Ball(Collidable):
         dx = self.x // (configs.WIDTH // configs.SAMPLING_RATE)
 
         # Boundary escape prevention
-        if dx >= 30:
-            dx = 29
+        if dx >= configs.SAMPLING_RATE:
+            dx = configs.SAMPLING_RATE - 1
 
         if dx < 0:
             dx = 0

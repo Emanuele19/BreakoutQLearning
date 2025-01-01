@@ -23,7 +23,7 @@ class AbstractController(ABC):
         self.floor = Floor(self.slider.y, configs.WIDTH)
         self.leftWall = SideWall(1, configs.HEIGHT)
         self.rightWall = SideWall(configs.WIDTH - 1, configs.HEIGHT)
-        self.bricks = self.__create_bricks()
+        self.bricks = self.__create_bricks(20)
         self.collisionHandler = CollisionHandler([
             self.ball,
             self.slider,
@@ -42,7 +42,7 @@ class AbstractController(ABC):
         raise NotImplementedError
 
     def refresh(self) -> None:
-        # self.draw_grid()
+        self.draw_grid()
         self.slider.draw(self.screen)
         self.ball.draw(self.screen)
         for brick in self.bricks:
@@ -92,7 +92,7 @@ class AbstractController(ABC):
         """
         Creates a cluster of n*l bricks, where n is the number of bricks per line and l is the number of lines
         """
-        brick_height = configs.HEIGHT // configs.SAMPLING_RATE
+        brick_height = configs.HEIGHT // configs.SAMPLING_RATE * 2
         out = []
         for i in range(l):
             # Every discretion cell (SAMPLING_RATE parameter) must have at most one brick with width = WIDTH // SAMPLING_RATE

@@ -1,6 +1,9 @@
+import json
 import os
 import pickle
+import sys
 import time
+import random
 
 import numpy as np
 import pygame
@@ -12,10 +15,14 @@ MAX_PLAYING_TIME = 3.6
 MAX_FRAMES = 7200
 
 def main():
-    controller = ControllerFactory.get_instance(is_human=False)
+
+    with open(sys.argv[1], "r") as parameters_file:
+        parameters = json.load(parameters_file)
+
+    controller = ControllerFactory.get_instance(is_human=False, rewards=parameters["rewards"])
 
     # Inizializzazione della tabella
-    Q = load_table('tests/test17/Q_table.pkl')
+    Q = load_table('tests/test16/Q_table.pkl')
 
     broken_bricks_tracking_list = []
 
@@ -31,7 +38,11 @@ def main():
             state = controller.get_game_state()
 
             # 2. Scegli un'azione
-            action = max(Q[state], key=Q[state].get)
+            if False: # TEST RANDOM
+            #if random.uniform(0, 1) < 0.07:
+                action = sorted(Q[state], key=Q[state].get)[1] # Second best move
+            else:
+                action = max(Q[state], key=Q[state].get)
 
             # 3. Esegui l'azione
             running = controller.run_game(action)
