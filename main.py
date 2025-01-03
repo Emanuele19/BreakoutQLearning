@@ -15,6 +15,7 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mo
 
 
 # TODO: Implementa e valuta il replay buffer
+# TODO: la fase di sfruttamento (senza esplorazione) quanto influisce sul training?
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -103,7 +104,7 @@ def main():
 
             if (episode + 1) % 500 == 0 and episode != 0:
                 plot_performance(reward_traking_list, f"{output_path}obtained_rewards.png", "rewards", episode)
-                # plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
+                plot_performance(epsilon_tracking_list, f"{output_path}exploration_rate_decay.png", "epsilon", episode)
                 plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
                 plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
@@ -132,7 +133,6 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
 
 
 def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state):
-    # TODO: se lo stato è terminale devi impostare max_future_reward = 0
     if is_terminal_state:
         max_future_reward = 0
     else:
@@ -140,7 +140,8 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
-    return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
+    return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / 100_000)
+    #return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
 
 def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
     """
