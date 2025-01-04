@@ -1,5 +1,6 @@
 import os
 import pickle
+import random
 import time
 
 import numpy as np
@@ -15,7 +16,7 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q = load_table('tests/test16/Q_table.pkl')
+    Q = load_table('tests/test26/Q_table.pkl')
 
     broken_bricks_tracking_list = []
 
@@ -31,7 +32,10 @@ def main():
             state = controller.get_game_state()
 
             # 2. Scegli un'azione
-            action = max(Q[state], key=Q[state].get)
+            if random.uniform(0, 1) < 0.1:
+                action = random.choice(list(Q[state].keys()))
+            else:
+                action = max(Q[state], key=Q[state].get)
 
             # 3. Esegui l'azione
             running = controller.run_game(action)

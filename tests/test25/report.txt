@@ -1,0 +1,4 @@
+Questo test è stato fatto facendo revert al commit che ha prodotto i migliori risultati (quello del test 16)
+Il test è stato effettuato ora su 150.000 episodi (+50.000)
+
+Tornato il problema del loop. Valutazione fatta con politica epsilon greedy con epsilon=0.1
