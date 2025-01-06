@@ -1,6 +1,7 @@
 import pygame
 import configs
 from control.controllerFactory import ControllerFactory
+from control.replayBuffer import ReplayBuffer
 from objects.slider import Slider
 import random
 import pickle
@@ -12,11 +13,6 @@ import sys
 import itertools
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
-
-
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
 
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
@@ -57,38 +53,49 @@ def main():
 
     controller.reset()
 
-
+    batch_size = metaparameters["batch_size"]
+    replay_buffer = ReplayBuffer(capacity=10000)
     try:
         for episode in range(metaparameters["episodes"]):
             running = True
             if (episode % 50) == 0:
                 print(f"Running episode: {episode}")
             frame_counter = 0
+
+            # Nel ciclo principale
             while running:
-                # 1. Osserva lo stato corrente
+                # Osserva lo stato corrente
                 state = controller.get_game_state()
 
-                # 2. Scegli un'azione
+                # Scegli un'azione
                 action = choose_action(Q, state, action_space, exploration_rate)
 
-                # 3. Esegui l'azione
+                # Esegui l'azione
                 running = controller.run_game(action)
 
+                # Calcola nuovo stato e ricompensa
                 new_state = controller.get_game_state()
                 reward = controller.get_reward()
                 frame_counter += 1
 
+                # Controlla se l'episodio è finito
                 if controller.is_ended():
                     reward = rewards["win_reward"]
                     running = False
                 elif frame_counter >= MAX_FRAMES:
                     reward = rewards["time_exceeded_penalty"]
                     running = False
-                    print("Time")
 
-                # 4. Aggiorna la tabella
-                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"]
-                             ,is_terminal_state=(not running))
+                # Aggiungi l'esperienza al buffer
+                replay_buffer.add((state, action, reward, new_state, not running))
+
+                # Aggiorna la Q-table campionando dal Replay Buffer
+                if len(replay_buffer) >= batch_size:
+                    experiences = replay_buffer.sample(batch_size)
+                    for exp_state, exp_action, exp_reward, exp_new_state, exp_is_terminal in experiences:
+                        update_table(Q, exp_state, exp_action, exp_reward, exp_new_state, learning_rate,
+                                     metaparameters["discount_factor"], exp_is_terminal)
+
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         print("pygame.QUIT")

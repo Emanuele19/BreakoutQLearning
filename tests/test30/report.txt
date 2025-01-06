@@ -1,0 +1,4 @@
+Questo è il primo test fatto con replay buffer.
+Il modello di base è il migliore valutato tra tutte le branch precedenti (esclusa quella con DQN).
+Apprendimento rallentato di molto, tuttavia c'è una curva particolarmente ripida cominciata in prossimità
+dei 90k episodi. Da indagare.
