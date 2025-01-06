@@ -1,0 +1,3 @@
+Test effettuato con LR = 0.01
+Stesso setting di test 25.
+Prestazioni simili al test 25
