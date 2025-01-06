@@ -1,0 +1,2 @@
+Come in test 28 + max_future_reward = 0 if terminal state
+La distribuzione dei risultati potrebbe essere indicativa di una non sufficiente esplorazione

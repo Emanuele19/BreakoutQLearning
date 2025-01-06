@@ -87,7 +87,8 @@ def main():
                     print("Time")
 
                 # 4. Aggiorna la tabella
-                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"])
+                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"]
+                             ,is_terminal_state=(not running))
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         print("pygame.QUIT")
@@ -132,8 +133,11 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
         return max(q_table[current_state], key=q_table[current_state].get)
 
 
-def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor):
-    max_future_reward = max(q_table[new_state].values())
+def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
+    if is_terminal_state:
+        max_future_reward = 0
+    else:
+        max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
