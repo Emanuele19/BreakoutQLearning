@@ -1,6 +1,6 @@
 {
   "metaparameters": {
-    "id": 28,
+    "id": 27,
     "epsilon": 1,
     "min_epsilon": 0.01,
     "learning_rate": 0.001,

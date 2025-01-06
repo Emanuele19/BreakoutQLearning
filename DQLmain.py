@@ -17,6 +17,7 @@ import itertools
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.mixed_precision import set_global_policy
 from collections import deque
 
 
@@ -46,7 +47,7 @@ def main():
 
     # Inizializzazione replay buffer e modello
     replay_buffer = deque(maxlen=10000)  # TODO: metti nel file di config
-    model = create_dqn_model(input_dim=state_space_len, n_actions=len(action_space))
+    model = create_dqn_model(input_dim=state_space_len, n_actions=len(action_space), learning_rate=learning_rate)
 
     # Esecuzione
     reward_traking_list = []
@@ -194,10 +195,10 @@ def report(parameter_list: list, path):
         pickle.dump(parameter_list, f)
 
 
-def create_dqn_model(input_dim, n_actions):
+def create_dqn_model(input_dim, n_actions, learning_rate=0.001):
     model = Sequential([
-        Dense(128, input_dim=input_dim, activation='relu'),
-        Dense(64, activation='relu'),
+        Dense(64, input_dim=input_dim, activation='relu'),
+        Dense(32, activation='relu'),
         Dense(n_actions, activation='linear')
     ])
     model.compile(optimizer=Adam(learning_rate=0.001), loss='mse')
@@ -238,5 +239,6 @@ def train_dqn(model, replay_buffer, batch_size, gamma):
 import tensorflow as tf
 if __name__ == "__main__":
     # tf.debugging.set_log_device_placement(True)
+    set_global_policy('mixed_float16')
     with tf.device('/device:CPU:0'):
         main()
