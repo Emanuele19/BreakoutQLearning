@@ -1,0 +1,5 @@
+Questo è il primo test che cambia i rewards.
+Il cambio è stato fatto su max_penalty (-100 -> -20)
+
+Risultato: 6 (+-2)
+Rispetto al test 16 il massimo di mattoncini rotti è sceso da 9 a 8, la media è leggermente più bassa.

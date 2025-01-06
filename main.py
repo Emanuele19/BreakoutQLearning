@@ -132,7 +132,6 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
     else:
         return max(q_table[current_state], key=q_table[current_state].get)
 
-
 def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
     if is_terminal_state:
         max_future_reward = 0
