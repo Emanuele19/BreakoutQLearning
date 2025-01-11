@@ -16,7 +16,8 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q = load_table('tests/test26/Q_table.pkl')
+    testId = 31
+    Q = load_table(f'tests/test{testId}/Q_table.pkl')
 
     broken_bricks_tracking_list = []
 
@@ -44,12 +45,12 @@ def main():
                 running = False
             elif frame_counter >= MAX_FRAMES:
                 print(time.time() - start_time)
-                return
+                break
 
 
         broken_bricks_tracking_list.append(controller.broken_bricks())
 
-    report(broken_bricks_tracking_list, "trained_performances.png", "broken bricks", episodes)
+    report(broken_bricks_tracking_list, f"tests/test{testId}/trained_performances.png", "broken bricks", episodes)
 
 
 def load_table(path='Q_table.pkl'):

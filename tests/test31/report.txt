@@ -1,0 +1,1 @@
+Come il test30 ma su 150000 episodi e con decadimento lineare dell'exploration rate fino a 100k episodi, poi fisso a 0.01

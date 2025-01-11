@@ -104,6 +104,7 @@ def main():
                         os._exit(1)
 
 
+            # exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],100_000)
             exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
             # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
             reward_traking_list.append(controller.get_total_reward())

@@ -1,0 +1,4 @@
+Questo è il test con tutte le nuove feature (al di fuori della
+discretizzazione dei reward. Sembra che dopo 100k iterazioni il risultato 
+non sia soddisfacente, inoltre c'è il solito problema dell'agente che si
+blocca su un ciclo infinito di mosse uguali.
