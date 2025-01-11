@@ -13,11 +13,6 @@ import itertools
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
 
-
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
-
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
 def main():
@@ -45,9 +40,9 @@ def main():
                    for brick_state in tuple(itertools.product([True, False], repeat=len(controller.bricks)))]
 
     # Inizializzazione della tabella
-    Q = {}
+    Q1 = Q2 = {}
     for state in state_space:
-        Q[state] = {action: 0.0 for action in action_space}
+        Q1[state] = Q2[state] = {action: 0.0 for action in action_space}
 
     # Esecuzione
     reward_traking_list = []
@@ -69,7 +64,7 @@ def main():
                 state = controller.get_game_state()
 
                 # 2. Scegli un'azione
-                action = choose_action(Q, state, action_space, exploration_rate)
+                action = choose_action(Q1, Q2, state, action_space, exploration_rate)
 
                 # 3. Esegui l'azione
                 running = controller.run_game(action)
@@ -87,7 +82,7 @@ def main():
                     print("Time")
 
                 # 4. Aggiorna la tabella
-                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"]
+                update_table(Q1, Q2, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"]
                              ,is_terminal_state=(not running))
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -122,7 +117,7 @@ def main():
 
 
 
-def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
+def choose_action(q1, q2, current_state, action_space, p) -> Slider.Action:
     """
     ε-greedy policy implementation, necessary condition for q-learning convergence
     :returns the greedy choice (from q table) with ε probaility and a random choice with 1-ε
@@ -130,14 +125,24 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
     if random.uniform(0, 1) < p:
         return random.choice(action_space)
     else:
-        return max(q_table[current_state], key=q_table[current_state].get)
+        q = q1[current_state] + q2[current_state]
+        return max(q[current_state], key=q_table[current_state].get)
 
-def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
+def update_table(q1, q2, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
+    """
+    With equal probability update eitheir the first or the second table
+    """
+    if random.uniform(0, 1) < 0.5:
+        update_single_table(q1, state, action, reward, new_state, learning_rate, is_terminal_state)
+    else:
+        update_single_table(q2, state, action, reward, new_state, learning_rate, is_terminal_state)
+
+def update_single_table(q, state, action, reward, next_state, learning_rate, discount_factor, is_terminal_state=False):
     if is_terminal_state:
         max_future_reward = 0
     else:
         max_future_reward = max(q_table[new_state].values())
-    q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
+    q[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q[state][action])
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
