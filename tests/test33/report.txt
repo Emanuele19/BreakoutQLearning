@@ -1,0 +1,5 @@
+Dati i test 30-32 si vede un impennata nell'ultima (circa) 5% dell'allenamento.
+Dopo questa impennata l'allenamento produce risultati in modo lineare.
+Potrebbe essere che con l'approcciare del exploration rate minimo (in questi test 0.01) l'aumentare dell'exploitation
+aiuti l'agente a performare meglio.
+Questo test vuole porre il minimo a 0.05 per testare questa ipotesi.
