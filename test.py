@@ -16,7 +16,7 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q = load_table('tests/test26/Q_table.pkl')
+    Q1, Q2 = load_tables('tests/test35')
 
     broken_bricks_tracking_list = []
 
@@ -32,10 +32,11 @@ def main():
             state = controller.get_game_state()
 
             # 2. Scegli un'azione
-            if random.uniform(0, 1) < 0.1:
-                action = random.choice(list(Q[state].keys()))
-            else:
-                action = max(Q[state], key=Q[state].get)
+            s1 = Q1[state]
+            s2 = Q2[state]
+            Q_combined = {action: s1[action] + s2[action] for action in s1}
+
+            action = max(Q_combined, key=Q_combined.get)
 
             # 3. Esegui l'azione
             running = controller.run_game(action)
@@ -49,12 +50,17 @@ def main():
 
         broken_bricks_tracking_list.append(controller.broken_bricks())
 
-    report(broken_bricks_tracking_list, "trained_performances.png", "broken bricks", episodes)
+    report(broken_bricks_tracking_list, "tests/test35/trained_performances.png", "broken bricks", episodes)
 
 
-def load_table(path='Q_table.pkl'):
-    with open(path, 'rb') as f:
-        return pickle.load(f)
+def load_tables(path1:str):
+    with open(path1 + "/Q1.pkl", 'rb') as f:
+        q1 = pickle.load(f)
+
+    with open(path1 + "/Q2.pkl", 'rb') as f:
+        q2 = pickle.load(f)
+
+    return q1, q2
 
 def report(parameter_list: list, filename: str, parameter_name: str, episodes: int):
     def chunks(lst, n):
