@@ -87,7 +87,7 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         print("pygame.QUIT")
-                        serialize_table(Q, output_path)
+                        serialize_tables(Q1, Q2, output_path)
                         report(reward_traking_list, output_path)
                         os._exit(1)
 
@@ -108,12 +108,12 @@ def main():
 
     except KeyboardInterrupt as e:
         print("KeyboardInterrupt")
-        serialize_table(Q, output_path)
+        serialize_tables(Q1, Q2, output_path)
         report(reward_traking_list, output_path)
     pygame.quit()
 
     report(reward_traking_list, output_path)
-    serialize_table(Q, output_path)
+    serialize_tables(Q1, Q2, output_path)
 
 
 
@@ -125,24 +125,23 @@ def choose_action(q1, q2, current_state, action_space, p) -> Slider.Action:
     if random.uniform(0, 1) < p:
         return random.choice(action_space)
     else:
-        q = q1[current_state] + q2[current_state]
-        return max(q[current_state], key=q_table[current_state].get)
+        # result = {key: dict1[key] + dict2[key] for key in dict1}
+        s1 = q1[current_state]
+        s2 = q2[current_state]
+        Q_combined = {action: s1[action] + s2[action] for action in s1}
+
+        return max(Q_combined, key=Q_combined.get)
 
 def update_table(q1, q2, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
     """
     With equal probability update eitheir the first or the second table
     """
     if random.uniform(0, 1) < 0.5:
-        update_single_table(q1, state, action, reward, new_state, learning_rate, is_terminal_state)
+        max_future_reward = 0 if is_terminal_state else max(q2[new_state].values())
+        q1[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q1[state][action])
     else:
-        update_single_table(q2, state, action, reward, new_state, learning_rate, is_terminal_state)
-
-def update_single_table(q, state, action, reward, next_state, learning_rate, discount_factor, is_terminal_state=False):
-    if is_terminal_state:
-        max_future_reward = 0
-    else:
-        max_future_reward = max(q_table[new_state].values())
-    q[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q[state][action])
+        max_future_reward = 0 if is_terminal_state else max(q1[new_state].values())
+        q2[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q2[state][action])
 
 def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
     return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
@@ -159,11 +158,13 @@ def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
     """
     return alpha_0 * np.exp(-decay_rate * episode)
 
-def serialize_table(q, path):
-    with open(f'{path}Q_table.pkl', 'wb') as f:
-        pickle.dump(q, f)
+def serialize_tables(q1, q2, path):
+    with open(f'{path}Q1.pkl', 'wb') as f:
+        pickle.dump(q1, f)
+    with open(f'{path}Q2.pkl', 'wb') as f:
+        pickle.dump(q2, f)
 
-def load_table():
+def load_tables():
     with open('Q_table.pkl', 'rb') as f:
         return pickle.load(f)
 
