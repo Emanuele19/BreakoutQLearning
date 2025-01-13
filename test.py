@@ -16,7 +16,8 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    Q1, Q2 = load_tables('tests/test35')
+    test_id = 35
+    Q1, Q2 = load_tables(f'tests/test{test_id}')
 
     broken_bricks_tracking_list = []
 
@@ -50,7 +51,7 @@ def main():
 
         broken_bricks_tracking_list.append(controller.broken_bricks())
 
-    report(broken_bricks_tracking_list, "tests/test35/trained_performances.png", "broken bricks", episodes)
+    report(broken_bricks_tracking_list, f"tests/test{test_id}/trained_performances.png", "broken bricks", episodes)
 
 
 def load_tables(path1:str):

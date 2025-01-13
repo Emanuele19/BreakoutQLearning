@@ -1,0 +1,2 @@
+Questo è il primo test fatto con doppia q table
+Risultato molto stabile, tuttavia non migliore di quanto avuto in precedenza.
