@@ -92,7 +92,8 @@ def main():
                         os._exit(1)
 
 
-            exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
+            exploration_rate = linear_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"], metaparameters["episodes"])
+            # exploration_rate = exp_decay(metaparameters['min_epsilon'], metaparameters['alpha_decay'], episode)
             # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
             reward_traking_list.append(controller.get_total_reward())
             broken_bricks_list.append(controller.broken_bricks())
@@ -143,20 +144,20 @@ def update_table(q1, q2, state, action, reward, new_state, learning_rate, discou
         max_future_reward = 0 if is_terminal_state else max(q1[new_state].values())
         q2[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q2[state][action])
 
-def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
-    return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
+def linear_decay(current_episode: int, min_val:float, val:float, total_episodes:int) -> float:
+    return max(min_val, val - current_episode * (val - min_val) / total_episodes)
 
-def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
+def exp_decay(starting_val: float, decay_rate: float, episode: int) -> float:
     """
     Applies the formula αn = α0 ⋅ e^(-λn) where an is the calculated LR, a0 is the initial LR, λ is the decay rate and
     n is the number of episodes elapsed.
 
-    :param: alpha_0 initial learning rate
+    :param: starting_val initial value
     :param: decay_rate exponent (lambda), is a positive value
     :param: episode current episode
-    :return: calculated learning rate
+    :return: calculated value
     """
-    return alpha_0 * np.exp(-decay_rate * episode)
+    return starting_val * np.exp(-decay_rate * episode)
 
 def serialize_tables(q1, q2, path):
     with open(f'{path}Q1.pkl', 'wb') as f:
