@@ -13,11 +13,6 @@ import itertools
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # Required to run pygame in headless mode
 
-
-# TODO: una delle garanzie di convergenza del q learning è che la somma dei learning rate su tempo infinito diverga
-#       mentre la somma dei quadrati dei learning rate diverga
-#       L'approccio qui è episodico, potrei anche far decadere il lr linearmente tra un intervallo. ES. [0.1, 0.01]
-
 MAX_FRAMES = 7200  # Equivalenti a 2 minuti di gioco a 60FPS
 
 def main():
