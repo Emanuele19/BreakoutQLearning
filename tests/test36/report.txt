@@ -1,0 +1,2 @@
+Primo test con decadimento esponenziale dell'exploration rate.
+L'obiettivo è verificare la convergenza e misurare la stabilità dell'allenamento.
