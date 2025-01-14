@@ -16,7 +16,7 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    testId = 31
+    testId = 37
     Q = load_table(f'tests/test{testId}/Q_table.pkl')
 
     broken_bricks_tracking_list = []
