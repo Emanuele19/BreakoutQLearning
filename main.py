@@ -30,7 +30,7 @@ def main():
     metaparameters = parameters["metaparameters"]
     learning_rate = metaparameters["learning_rate"]
     rewards = parameters["rewards"]
-    output_path = f"./tests/test{metaparameters["id"]}/"
+    output_path = f"./tests/test{metaparameters['id']}/"
     os.mkdir(output_path)
 
     exploration_rate = metaparameters["epsilon"]
@@ -97,7 +97,8 @@ def main():
                         os._exit(1)
 
 
-            exploration_rate = epsilon_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"],metaparameters["episodes"])
+            # exploration_rate = linear_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"], metaparameters["episodes"])
+            exploration_rate = exp_decay(metaparameters['min_epsilon'], metaparameters['alpha_decay'], episode)
             # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
             reward_traking_list.append(controller.get_total_reward())
             broken_bricks_list.append(controller.broken_bricks())
@@ -139,10 +140,10 @@ def update_table(q_table, state, action, reward, new_state, learning_rate, disco
         max_future_reward = max(q_table[new_state].values())
     q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
 
-def epsilon_decay(current_episode: int, min_epsilon:float, epsilon:float, total_episodes:int) -> float:
-    return max(min_epsilon, epsilon - current_episode * (epsilon - min_epsilon) / total_episodes)
+def linear_decay(current_episode: int, min_val:float, val:float, total_episodes:int) -> float:
+    return max(min_val, val - current_episode * (val - min_val) / total_episodes)
 
-def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
+def exp_decay(base_value: float, decay_rate: float, episode: int) -> float:
     """
     Applies the formula αn = α0 ⋅ e^(-λn) where an is the calculated LR, a0 is the initial LR, λ is the decay rate and
     n is the number of episodes elapsed.
@@ -152,7 +153,7 @@ def alpha_decay(alpha_0: float, decay_rate: float, episode: int) -> float:
     :param: episode current episode
     :return: calculated learning rate
     """
-    return alpha_0 * np.exp(-decay_rate * episode)
+    return base_value * np.exp(-decay_rate * episode)
 
 def serialize_table(q, path):
     with open(f'{path}Q_table.pkl', 'wb') as f:
