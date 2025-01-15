@@ -1,0 +1,2 @@
+Test con decadimento esponenziale dell'exploration rate.
+Training molto più stabile (sulla media) ma rimane il problema dei loop di azioni
