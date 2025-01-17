@@ -82,7 +82,8 @@ def main():
                     print("Time")
 
                 # 4. Aggiorna la tabella
-                update_table(Q, state, action, reward, new_state, learning_rate, metaparameters["discount_factor"]
+                new_action = choose_action(Q, new_state, action_space, exploration_rate)
+                update_table(Q, state, action, reward, new_state, new_action, learning_rate, metaparameters["discount_factor"]
                              ,is_terminal_state=(not running))
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -105,16 +106,21 @@ def main():
                 plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
                 plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
+            if episode in [25_000, 50_000, 75_000]:
+                serialize_table(Q, output_path, episode / 1000)
+
             controller.reset()
 
     except KeyboardInterrupt as e:
         print("KeyboardInterrupt")
-        serialize_table(Q, output_path)
+        serialize_table(Q, output_path, episode)
         report(reward_traking_list, output_path)
-    pygame.quit()
+        return
+    finally:
+        pygame.quit()
 
     report(reward_traking_list, output_path)
-    serialize_table(Q, output_path)
+    serialize_table(Q, output_path, metaparameters['episodes'] / 1000)
 
 
 
@@ -128,12 +134,12 @@ def choose_action(q_table, current_state, action_space, p) -> Slider.Action:
     else:
         return max(q_table[current_state], key=q_table[current_state].get)
 
-def update_table(q_table, state, action, reward, new_state, learning_rate, discount_factor, is_terminal_state=False):
+def update_table(q_table, state, action, reward, new_state, new_action, learning_rate, discount_factor, is_terminal_state=False):
     if is_terminal_state:
-        max_future_reward = 0
+        future_reward = 0
     else:
-        max_future_reward = max(q_table[new_state].values())
-    q_table[state][action] += learning_rate * (reward + discount_factor * max_future_reward - q_table[state][action])
+        future_reward = q_table[new_state][new_action]
+    q_table[state][action] += learning_rate * (reward + discount_factor * future_reward - q_table[state][action])
 
 def linear_decay(current_episode: int, min_val:float, val:float, total_episodes:int) -> float:
     return max(min_val, val - current_episode * (val - min_val) / total_episodes)
@@ -150,8 +156,8 @@ def exp_decay(base_value: float, decay_rate: float, episode: int) -> float:
     """
     return base_value * np.exp(-decay_rate * episode)
 
-def serialize_table(q, path):
-    with open(f'{path}Q_table.pkl', 'wb') as f:
+def serialize_table(q, path, id):
+    with open(f'{path}Q_table-{id}k.pkl', 'wb') as f:
         pickle.dump(q, f)
 
 def load_table():
