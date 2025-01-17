@@ -1,4 +1,4 @@
-import os
+import os, re
 import pickle
 import random
 import time
@@ -15,43 +15,45 @@ MAX_FRAMES = 7200
 def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
-    test_id = 36
+    test_id = 39
 
-    # Inizializzazione della tabella
-    Q = load_table(f'tests/test{test_id}/Q_table.pkl')
+    test_path = f'tests/test{test_id}'
+    Q_tables = [f for f in os.listdir(test_path) if re.match(r'Q_table-\d+\.0k\.pkl', f)]
 
     broken_bricks_tracking_list = []
 
-    episodes = 100
-    for episode in range(episodes):
-        print(f"Running episode {episode + 1}")
-        running = True
-        controller.reset()
-        start_time = time.time()
-        frame_counter = 0
-        while running:
-            # 1. Osserva lo stato corrente
-            state = controller.get_game_state()
+    for Q in Q_tables:
+        episodes = 100
+        id = Q.split('-')[-1].split('.pkl')[0][:-3]
+        Q_table = load_table(test_path + '/' + Q)
+        print(f'Testing file {id}')
+        for episode in range(episodes):
+            print(f"Running episode {episode + 1}")
+            running = True
+            controller.reset()
+            start_time = time.time()
+            frame_counter = 0
+            while running:
+                # 1. Osserva lo stato corrente
+                state = controller.get_game_state()
 
-            # 2. Scegli un'azione
-            if random.uniform(0, 1) < 0.1:
-                action = random.choice(list(Q[state].keys()))
-            else:
-                action = max(Q[state], key=Q[state].get)
+                # 2. Scegli un'azione
+                if random.uniform(0, 1) < 0.1:
+                    action = random.choice(list(Q_table[state].keys()))
+                else:
+                    action = max(Q_table[state], key=Q_table[state].get)
 
-            # 3. Esegui l'azione
-            running = controller.run_game(action)
-            frame_counter += 1
-            if controller.is_ended():
-                running = False
-            elif frame_counter >= MAX_FRAMES:
-                print(time.time() - start_time)
-                break
-
-
-        broken_bricks_tracking_list.append(controller.broken_bricks())
-
-    report(broken_bricks_tracking_list, f"tests/test{test_id}/trained_performances.png", "broken bricks", episodes)
+                # 3. Esegui l'azione
+                running = controller.run_game(action)
+                frame_counter += 1
+                if controller.is_ended():
+                    running = False
+                elif frame_counter >= MAX_FRAMES:
+                    print(time.time() - start_time)
+                    break
+            broken_bricks_tracking_list.append(controller.broken_bricks())
+        report(broken_bricks_tracking_list, f"{test_path}/trained_performances-{id}k.png", "broken bricks", episodes)
+        broken_bricks_tracking_list = []
 
 
 def load_table(path='Q_table.pkl'):
