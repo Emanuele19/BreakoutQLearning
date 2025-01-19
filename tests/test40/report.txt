@@ -1,0 +1,1 @@
+Questo test mostra che con un epsilon che parte da 1 e decade anche con exp decay, l'apprendimento non è ottimale.
