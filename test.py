@@ -18,7 +18,7 @@ def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
     # Inizializzazione della tabella
-    test_id = 39
+    test_id = 40
 
     test_path = f'tests/test{test_id}'
     Q_tables = [f for f in os.listdir(test_path) if re.match(r'Q\d-\d+k\.pkl', f)]
@@ -41,7 +41,8 @@ def main():
         if q1_file and q2_file:
             pairs.append((q1_file, q2_file))
 
-    broken_bricks_tracking_list = []
+    reporter = PerformanceReporter(len(controller.bricks))
+    looped = False
 
     episodes = 100
     for Q1_name, Q2_name in pairs:
@@ -71,12 +72,16 @@ def main():
                     running = False
                 elif frame_counter >= MAX_FRAMES:
                     print(time.time() - start_time)
-                    return
+                    reporter.add_loop()
+                    looped = True
+                    break
 
 
-            broken_bricks_tracking_list.append(controller.broken_bricks())
-        report(broken_bricks_tracking_list, f"tests/test{test_id}/trained_performances{Q1_name.split('.')[0].split('-')[-1]}.png", "broken bricks", episodes)
-        broken_bricks_tracking_list = []
+            if not looped:
+                reporter.add(controller.broken_bricks())
+            else:
+                looped = False
+        reporter.report(f"tests/test{test_id}", Q1_name.split('.')[0].split('-')[-1])
 
 
 def load_tables(path1, path2):
@@ -101,6 +106,29 @@ def report(parameter_list: list, filename: str, parameter_name: str, episodes: i
     plt.plot(x_means, means_list, marker='x')
     plt.savefig(filename)
     plt.close()
+
+class PerformanceReporter:
+    def __init__(self, n_bricks:int = 10):
+        self.n_bricks = n_bricks
+        self.perf_map = [0] * (n_bricks + 1)
+
+    def add(self, score:int) -> None:
+        self.perf_map[score] += 1
+
+    def add_loop(self) -> None:
+        self.perf_map[-1] += 1
+
+    def report(self, base_path:str, episodes:str = None) -> None:
+        plt.figure(figsize=(10, 6))
+        bar_colors = ['blue'] * self.n_bricks + ['red']
+        keys = list(map(str, range(self.n_bricks))) + ['x']
+        plt.bar(keys, self.perf_map, color=bar_colors)
+        plt.xlabel("Punteggio")
+        plt.ylabel("Numero di episodi")
+        plt.title("Performance" + (f" ({episodes})" if episodes else ""))
+        plt.savefig(f"{base_path}/trained_performances{episodes}.png")
+        plt.plot()
+        self.perf_map = [0] * (self.n_bricks + 1)
 
 if __name__ == '__main__':
     main()
