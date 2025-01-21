@@ -1,0 +1,1 @@
+Esperimento di 3 per migliore epsilon iniziale
