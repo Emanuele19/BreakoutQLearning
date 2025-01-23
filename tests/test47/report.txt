@@ -1,0 +1,2 @@
+Sembra che il decadimento esponeziale del LR (con LR=0.01) abbia portato a dei risultati accettabili.
+L'agente non soffre più del problema dei loop infiniti.

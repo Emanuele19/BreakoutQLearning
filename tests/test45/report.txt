@@ -1,0 +1,2 @@
+Primo di 3 test sul decadimento del LR.
+N.B. questo test non convergeva, è stato interrotto dopo +8h di training.
