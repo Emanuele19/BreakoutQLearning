@@ -1,11 +1,8 @@
 import os
 import pickle
-import random
 import time
-
-import numpy as np
-import pygame
 from matplotlib import pyplot as plt
+import re
 
 from control.controllerFactory import ControllerFactory
 
@@ -15,62 +12,75 @@ MAX_FRAMES = 7200
 def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
-    test_id = 36
+    test_id = 47
 
-    # Inizializzazione della tabella
-    Q = load_table(f'tests/test{test_id}/Q_table.pkl')
+    base_path = f"tests/test{test_id}"
+    q_tables = [path for path in os.listdir(base_path) if re.match('Q_table-\d+k\.pkl', path)]
 
-    broken_bricks_tracking_list = []
+    reporter = PerformanceReporter()
+    looped = False
 
     episodes = 100
-    for episode in range(episodes):
-        print(f"Running episode {episode + 1}")
-        running = True
-        controller.reset()
-        start_time = time.time()
-        frame_counter = 0
-        while running:
-            # 1. Osserva lo stato corrente
-            state = controller.get_game_state()
+    for q_table in q_tables:
+        Q = load_table(base_path + "/" + q_table)
+        for episode in range(episodes):
+            print(f"Running episode {episode + 1}")
+            running = True
+            controller.reset()
+            start_time = time.time()
+            frame_counter = 0
+            while running:
+                # 1. Osserva lo stato corrente
+                state = controller.get_game_state()
 
-            # 2. Scegli un'azione
-            if random.uniform(0, 1) < 0.1:
-                action = random.choice(list(Q[state].keys()))
-            else:
+                # 2. Scegli un'azione
                 action = max(Q[state], key=Q[state].get)
 
-            # 3. Esegui l'azione
-            running = controller.run_game(action)
-            frame_counter += 1
-            if controller.is_ended():
-                running = False
-            elif frame_counter >= MAX_FRAMES:
-                print(time.time() - start_time)
-                break
+                # 3. Esegui l'azione
+                running = controller.run_game(action)
+                frame_counter += 1
+                if controller.is_ended():
+                    running = False
+                elif frame_counter >= MAX_FRAMES:
+                    print(time.time() - start_time)
+                    reporter.add_loop()
+                    looped = True
+                    break
 
+            if not looped:
+                reporter.add(controller.broken_bricks())
+            else:
+                looped = False
 
-        broken_bricks_tracking_list.append(controller.broken_bricks())
-
-    report(broken_bricks_tracking_list, f"tests/test{test_id}/trained_performances.png", "broken bricks", episodes)
+        reporter.report(f"tests/test{test_id}", q_table.split('k')[0].split('-')[-1])
 
 
 def load_table(path='Q_table.pkl'):
     with open(path, 'rb') as f:
         return pickle.load(f)
 
-def report(parameter_list: list, filename: str, parameter_name: str, episodes: int):
-    def chunks(lst, n):
-        for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-    plt.figure()
-    plt.title(f"{parameter_name} ({episodes}) episodes")
-    plt.ylabel(parameter_name)
-    means_list = [np.mean(c) for c in chunks(parameter_list, 50)]
-    x_means = np.arange(25, len(parameter_list), 50)
-    plt.plot(parameter_list, marker='.')
-    plt.plot(x_means, means_list, marker='x')
-    plt.savefig(filename)
-    plt.close()
+class PerformanceReporter:
+    def __init__(self, n_bricks:int = 10):
+        self.n_bricks = n_bricks
+        self.perf_map = [0] * (n_bricks + 1)
+
+    def add(self, score:int) -> None:
+        self.perf_map[score] += 1
+
+    def add_loop(self) -> None:
+        self.perf_map[-1] += 1
+
+    def report(self, base_path:str, episodes:str = None) -> None:
+        plt.figure(figsize=(10, 6))
+        bar_colors = ['blue'] * self.n_bricks + ['red']
+        keys = list(map(str, range(self.n_bricks))) + ['x']
+        plt.bar(keys, self.perf_map, color=bar_colors)
+        plt.xlabel("Punteggio")
+        plt.ylabel("Numero di episodi")
+        plt.title("Performance" + (f" ({episodes})" if episodes else ""))
+        plt.savefig(f"{base_path}/trained_performances{episodes}.png")
+        plt.plot()
+        self.perf_map = [0] * (self.n_bricks + 1) # reset
 
 if __name__ == '__main__':
     main()

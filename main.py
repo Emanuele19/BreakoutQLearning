@@ -87,14 +87,14 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         print("pygame.QUIT")
-                        serialize_table(Q, output_path)
+                        serialize_table(Q, output_path, episode)
                         report(reward_traking_list, output_path)
                         os._exit(1)
 
 
             # exploration_rate = linear_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"], metaparameters["episodes"])
-            exploration_rate = exp_decay(metaparameters['min_epsilon'], metaparameters['alpha_decay'], episode)
-            # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
+            exploration_rate = exp_decay(metaparameters['epsilon'], metaparameters['decay_rate'], episode)
+            learning_rate = exp_decay(metaparameters["learning_rate"], metaparameters["decay_rate"], episode)
             reward_traking_list.append(controller.get_total_reward())
             broken_bricks_list.append(controller.broken_bricks())
             alpha_tracking_list.append(learning_rate)
@@ -105,16 +105,18 @@ def main():
                 plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
                 plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
+            if episode % 25_000 == 0 and episode != 0:
+                serialize_table(Q, output_path, episode // 1000)
             controller.reset()
 
     except KeyboardInterrupt as e:
         print("KeyboardInterrupt")
-        serialize_table(Q, output_path)
+        serialize_table(Q, output_path, episode)
         report(reward_traking_list, output_path)
     pygame.quit()
 
     report(reward_traking_list, output_path)
-    serialize_table(Q, output_path)
+    serialize_table(Q, output_path, int(metaparameters["episodes"]) // 1000)
 
 
 
@@ -150,8 +152,8 @@ def exp_decay(base_value: float, decay_rate: float, episode: int) -> float:
     """
     return base_value * np.exp(-decay_rate * episode)
 
-def serialize_table(q, path):
-    with open(f'{path}Q_table.pkl', 'wb') as f:
+def serialize_table(q, path, id):
+    with open(f'{path}Q_table-{id}k.pkl', 'wb') as f:
         pickle.dump(q, f)
 
 def load_table():
