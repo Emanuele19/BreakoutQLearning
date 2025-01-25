@@ -12,7 +12,7 @@ MAX_FRAMES = 7200
 def main():
     controller = ControllerFactory.get_instance(is_human=False)
 
-    test_id = 47
+    test_id = 53
 
     base_path = f"tests/test{test_id}"
     q_tables = [path for path in os.listdir(base_path) if re.match('Q_table-\d+k\.pkl', path)]
