@@ -94,7 +94,7 @@ def main():
 
 
             # exploration_rate = linear_decay(episode, metaparameters["min_epsilon"], metaparameters["epsilon"], metaparameters["episodes"])
-            exploration_rate = exp_decay(metaparameters['min_epsilon'], metaparameters['alpha_decay'], episode)
+            exploration_rate = exp_decay(metaparameters['epsilon'], metaparameters['decay_rate'], episode)
             # learning_rate = alpha_decay(metaparameters["learning_rate"], metaparameters["alpha_decay"], episode)
             reward_traking_list.append(controller.get_total_reward())
             broken_bricks_list.append(controller.broken_bricks())
@@ -106,7 +106,7 @@ def main():
                 plot_performance(broken_bricks_list, f"{output_path}broken_bricks.png", "broken bricks", episode)
                 plot_performance(alpha_tracking_list, f"{output_path}lr_decay.png", "alpha", episode)
 
-            if episode in [25_000, 50_000, 75_000]:
+            if episode % 25_000 == 0 and episode != 0:
                 serialize_table(Q, output_path, episode / 1000)
 
             controller.reset()
